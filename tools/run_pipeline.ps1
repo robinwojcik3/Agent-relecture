@@ -17,6 +17,16 @@ $revMd   = Join-Path $work "rapport_revise.md"
 $revDocx = Join-Path $work "rapport_revise.docx"
 $csv     = Join-Path $work "commentaires.csv"
 
+# Si la session fournit un dossier de sortie explicite, l'utiliser
+if ($session.PSObject.Properties.Name -contains 'output_dir') {
+  $userOut = [string]$session.output_dir
+  if ($userOut) {
+    if ([System.IO.Path]::IsPathRooted($userOut)) { $output = $userOut }
+    else { $output = Join-Path $repo $userOut }
+  }
+}
+if (-not (Test-Path $output)) { New-Item -ItemType Directory -Force -Path $output | Out-Null }
+
 if (-not (Test-Path $revMd)) { throw "Manque work/rapport_revise.md (produit par l'agent)." }
 if (-not (Test-Path $csv))   { Write-Host "Avertissement: work/commentaires.csv introuvable. Continuer sans commentaires." }
 
