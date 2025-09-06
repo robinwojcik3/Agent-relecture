@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, json, glob, msvcrt, time
+import os, sys, json, glob, msvcrt
 from datetime import datetime
 
 MODES = [
@@ -28,9 +28,9 @@ def arrow_menu(title, options):
         os.system('cls' if os.name=='nt' else 'clear')
         print(title+"\n")
         for i,(key,label) in enumerate(options):
-            prefix = "➜ " if i==idx else "  "
+            prefix = "→ " if i==idx else "  "
             print(f"{prefix}{label} [{key}]")
-        print("\nUtilisez ↑/↓ puis Entrée. Taper 1-4 fonctionne aussi.")
+        print("\nUtilisez ↑/↓ puis Entrée. Taper 1-9 fonctionne aussi.")
     redraw()
     while True:
         if os.name == 'nt':
@@ -45,7 +45,6 @@ def arrow_menu(title, options):
                 dig = int(ch.decode())
                 if 1 <= dig <= len(options): return options[dig-1][0]
         else:
-            # Fallback non-Windows: demander un numéro
             sel = input("Choix (1-{}): ".format(len(options))).strip()
             if sel.isdigit() and 1 <= int(sel) <= len(options):
                 return options[int(sel)-1][0]
@@ -63,8 +62,7 @@ def pick_docx():
     return docs[int(key)-1]
 
 def ask_pages():
-    print("\nRelire tout le document ? [O/n] ", end="", flush=True)
-    ans = input().strip().lower()
+    ans = input("\nRelire tout le document ? [O/n] ").strip().lower()
     if ans in ("", "o", "oui", "y", "yes"):
         return None
     while True:
@@ -84,11 +82,12 @@ def build_agent_prompt(mode, docx_path, page_range):
     pages_txt = "toutes les pages" if page_range is None else f"les pages {page_range[0]} à {page_range[1]}"
     checklist = f"modes/{mode}/instructions/checklist.md"
     refs_dir  = f"modes/{mode}/refs"
+    base_name = os.path.splitext(os.path.basename(docx_path))[0]
+    out_docx  = f"output/{base_name}_AI_suivi+commentaires.docx"
     prompt = f"""Objectif: Réaliser une relecture **{mode_label}** du document `{rel_docx}`, en considérant {pages_txt}.
 
 Contrainte: Ne pas utiliser d’API. Travailler dans le dépôt local. Produire **uniquement**:
-1) `work/rapport_revise.md` — version révisée intégrale en Markdown (structure conservée), corrections intégrées.
-2) `work/commentaires.csv` — colonnes: ancre_textuelle, commentaire, gravite, categorie.
+- `{out_docx}` — copie du DOCX original avec révisions suivies et commentaires intégrés.
 
 Référentiels à mobiliser:
 - Checklist: `{checklist}`
@@ -99,28 +98,23 @@ Règles d’analyse:
 - Citer preuves et pages quand possible; tolérance zéro copier-coller résiduel.
 - Poser **une seule** question fermée **uniquement si** un point critique empêche une conclusion fiable; sinon formuler une hypothèse explicite.
 
-Sorties à écrire:
-- `work/rapport_revise.md`
-- `work/commentaires.csv`  (schéma CSV exact: `ancre_textuelle,commentaire,gravite,categorie` ; gravite∈{{P1,P2,P3}} ; categorie∈{{coherence,methodologie,reglementaire,carto,redaction}})
-
-Étapes de travail conseillées (à exécuter localement):
-- Lire `{rel_docx}` (se concentrer sur {pages_txt}).
-- Lire `{checklist}` + les textes `work/refs_txt/{mode}/*.txt` s’ils existent.
-- Écrire les deux fichiers de sortie dans `work/`.
-
-Après ta production, je lancerai:
-- `pwsh -File tools/run_pipeline.ps1` pour générer `output/<nom>_AI_suivi+commentaires.docx` via Word > Compare.
+Exécution locale attendue (par l’agent, de bout en bout):
+- Lire `{rel_docx}` (focus: {pages_txt}).
+- Lire `{checklist}` + les textes `work/refs_txt/{mode}/*.txt` s’ils existent. Si absent, exécuter `pwsh -File tools/extract_refs.ps1 -Mode {mode}`.
+- Écrire TEMPORAIREMENT: `work/rapport_revise.md` (version révisée intégrale, structure conservée) et `work/commentaires.csv` (schéma exact: `ancre_textuelle,commentaire,gravite,categorie`; gravite∈{{P1,P2,P3}}; categorie∈{{coherence,methodologie,reglementaire,carto,redaction}}). L’`ancre_textuelle` doit être un court extrait LITTÉRAL du paragraphe révisé ciblé (pas un ID HTML), unique par paragraphe.
+- Générer le DOCX final en lançant `pwsh -File tools/run_pipeline.ps1 -Cleanup` (Word COM: Compare + insertion des commentaires), ce qui crée `{out_docx}` et supprime les fichiers temporaires dans `work/`.
+- Ne laisser en fin de tâche QUE le fichier `{out_docx}`.
 
 Contraintes de rédaction:
 - Style sobre, technique, factuel. Pas de superlatifs.
 - Tables en Markdown simple. Titres conservés.
-- Les ancres de `commentaires.csv` doivent être **courtes** et **uniques** par paragraphe ciblé du texte révisé.
+- Ancre courte et unique par paragraphe ciblé.
 """
     return prompt
 
 def main():
     os.system('cls' if os.name=='nt' else 'clear')
-    print("=== Relecture IA – sélecteur ===\n")
+    print("=== Relecture IA — sélecteur ===\n")
     docx = pick_docx()
     print(f"Sélectionné: {os.path.basename(docx)}")
     mode = arrow_menu("Choisir le mode de relecture", [(m[0], f"{i+1}. {m[1]}") for i,m in enumerate(MODES)])
@@ -141,11 +135,9 @@ def main():
     print("\n--- PROMPT À COPIER DANS LE CHAT WINDSURF ---\n")
     print(prompt)
     print(f"\n[Enregistré dans] {outp}")
-    print("\nÉtapes suivantes suggérées:")
-    print("  pwsh -File tools/setup_tools.ps1            # 1re fois uniquement")
-    print(f"  pwsh -File tools/extract_refs.ps1 -Mode {mode}")
-    print("  # Coller le prompt ci-dessus dans le chat et attendre la création de work/rapport_revise.md + work/commentaires.csv")
-    print("  pwsh -File tools/run_pipeline.ps1           # génère output/<nom>_AI_suivi+commentaires.docx")
+    print("\nProchaine étape:")
+    print("  1) Coller ce prompt dans le chat Windsurf.")
+    print("  2) À la fin, vérifier le fichier dans output/. Aucune autre action n’est requise.")
     print("\nTerminé.")
 
 if __name__ == "__main__":

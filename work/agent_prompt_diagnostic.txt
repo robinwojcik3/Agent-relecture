@@ -1,0 +1,31 @@
+Objectif: Réaliser une relecture **Relecture du diagnostic** du document `input/23.438_SERHY_Prédiagnostic écologique Lavaldens - rive droite (38).docx`, en considérant toutes les pages.
+
+Contrainte: Ne pas utiliser d’API. Travailler dans le dépôt local. Produire **uniquement**:
+1) `work/rapport_revise.md` — version révisée intégrale en Markdown (structure conservée), corrections intégrées.
+2) `work/commentaires.csv` — colonnes: ancre_textuelle, commentaire, gravite, categorie.
+
+Référentiels à mobiliser:
+- Checklist: `modes/diagnostic/instructions/checklist.md`
+- PDF de référence: dossiers `modes/diagnostic/refs/` (le cas échéant convertis en texte via `tools/extract_refs.ps1 -Mode diagnostic` qui écrit dans `work/refs_txt/diagnostic/`).
+
+Règles d’analyse:
+- Appliquer strictement la checklist du mode.
+- Citer preuves et pages quand possible; tolérance zéro copier-coller résiduel.
+- Poser **une seule** question fermée **uniquement si** un point critique empêche une conclusion fiable; sinon formuler une hypothèse explicite.
+
+Sorties à écrire:
+- `work/rapport_revise.md`
+- `work/commentaires.csv`  (schéma CSV exact: `ancre_textuelle,commentaire,gravite,categorie` ; gravite∈{P1,P2,P3} ; categorie∈{coherence,methodologie,reglementaire,carto,redaction})
+
+Étapes de travail conseillées (à exécuter localement):
+- Lire `input/23.438_SERHY_Prédiagnostic écologique Lavaldens - rive droite (38).docx` (se concentrer sur toutes les pages).
+- Lire `modes/diagnostic/instructions/checklist.md` + les textes `work/refs_txt/diagnostic/*.txt` s’ils existent.
+- Écrire les deux fichiers de sortie dans `work/`.
+
+Après ta production, je lancerai:
+- `pwsh -File tools/run_pipeline.ps1` pour générer `output/<nom>_AI_suivi+commentaires.docx` via Word > Compare.
+
+Contraintes de rédaction:
+- Style sobre, technique, factuel. Pas de superlatifs.
+- Tables en Markdown simple. Titres conservés.
+- Les ancres de `commentaires.csv` doivent être **courtes** et **uniques** par paragraphe ciblé du texte révisé.
