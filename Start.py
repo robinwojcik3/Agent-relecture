@@ -343,6 +343,92 @@ def run_compare_and_comment(original_docx: str, revised_docx: str, comments_csv:
     subprocess.run(cmd, check=True)
 
 
+# ---------------------- Fenêtre de sélection ----------------------
+
+class SectionsDialog(tk.Toplevel):
+    def __init__(self, master, sections, preselected_idx=None):
+        super().__init__(master)
+        self.title("Sélection des sections")
+        self.geometry("560x420")
+        self.resizable(True, True)
+        self.sections = sections
+        self.result = None
+        self.selected = set(preselected_idx or [])
+
+        frm = tk.Frame(self)
+        frm.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Listbox multisélection (EXTENDED => Shift pour plage, Ctrl pour ajout)
+        self.lb = tk.Listbox(frm, selectmode=tk.EXTENDED, activestyle="none")
+        sb = ttk.Scrollbar(frm, orient="vertical", command=self.lb.yview)
+        self.lb.configure(yscrollcommand=sb.set)
+        self.lb.pack(side="left", fill="both", expand=True)
+        sb.pack(side="right", fill="y")
+
+        # Remplir
+        for i, s in enumerate(sections):
+            indent = "    " * (max(0, s.level - 1))
+            self.lb.insert(tk.END, f"{indent}{s.label()}")
+            if i in self.selected:
+                self.lb.selection_set(i)
+        # Click sans modificateur => sélectionner le bloc (section + descendants)
+        self.lb.bind("<ButtonRelease-1>", self.on_click_block)
+
+        # Actions
+        btns = tk.Frame(self)
+        btns.pack(fill="x", padx=10, pady=(0, 10))
+        tk.Button(btns, text="Tout cocher", command=self.sel_all).pack(side="left")
+        tk.Button(btns, text="Tout décocher", command=self.sel_none).pack(side="left", padx=6)
+        tk.Button(btns, text="Valider", command=self.on_ok).pack(side="right")
+        tk.Button(btns, text="Annuler", command=self.on_cancel).pack(side="right", padx=6)
+
+        self.bind("<Return>", lambda e: self.on_ok())
+        self.bind("<Escape>", lambda e: self.on_cancel())
+        self.transient(master)
+        self.grab_set()
+        self.lb.focus_set()
+
+    def sel_all(self):
+        self.lb.select_set(0, tk.END)
+
+    def sel_none(self):
+        self.lb.select_clear(0, tk.END)
+
+    def on_ok(self):
+        self.result = list(self.lb.curselection())
+        self.destroy()
+
+    def on_cancel(self):
+        self.result = None
+        self.destroy()
+
+    def on_click_block(self, event):
+        # Respecter Shift/Ctrl (sélection étendue native)
+        shift = (event.state & 0x0001) != 0
+        ctrl = (event.state & 0x0004) != 0
+        if shift or ctrl:
+            return
+        idx = self.lb.nearest(event.y)
+        if idx < 0:
+            return
+        # Déterminer le bloc [idx .. endDesc]
+        cur_level = self.sections[idx].level
+        end = idx + 1
+        while end < len(self.sections) and self.sections[end].level > cur_level:
+            end += 1
+        block = range(idx, end)
+        # Toggle du bloc (si tout déjà sélectionné -> on désélectionne)
+        sel = set(self.lb.curselection())
+        if all(i in sel for i in block):
+            for i in block:
+                self.lb.selection_clear(i)
+        else:
+            # Remplacer par défaut (comportement simple et prévisible)
+            self.lb.selection_clear(0, tk.END)
+            for i in block:
+                self.lb.selection_set(i)
+
+
 # ------------------------- GUI -------------------------
 
 
@@ -682,61 +768,3 @@ class App(tk.Tk):
 
 if __name__ == "__main__":
     App().mainloop()
-
-
-# ---------------------- Fenêtre de sélection ----------------------
-
-class SectionsDialog(tk.Toplevel):
-    def __init__(self, master, sections, preselected_idx=None):
-        super().__init__(master)
-        self.title("Sélection des sections")
-        self.geometry("560x420")
-        self.resizable(True, True)
-        self.sections = sections
-        self.result = None
-        self.selected = set(preselected_idx or [])
-
-        frm = tk.Frame(self)
-        frm.pack(fill="both", expand=True, padx=10, pady=10)
-
-        # Listbox multisélection avec scrollbar
-        self.lb = tk.Listbox(frm, selectmode=tk.MULTIPLE, activestyle="none")
-        sb = ttk.Scrollbar(frm, orient="vertical", command=self.lb.yview)
-        self.lb.configure(yscrollcommand=sb.set)
-        self.lb.pack(side="left", fill="both", expand=True)
-        sb.pack(side="right", fill="y")
-
-        # Remplir
-        for i, s in enumerate(sections):
-            indent = "    " * (max(0, s.level - 1))
-            self.lb.insert(tk.END, f"{indent}{s.label()}")
-            if i in self.selected:
-                self.lb.selection_set(i)
-
-        # Actions
-        btns = tk.Frame(self)
-        btns.pack(fill="x", padx=10, pady=(0, 10))
-        tk.Button(btns, text="Tout cocher", command=self.sel_all).pack(side="left")
-        tk.Button(btns, text="Tout décocher", command=self.sel_none).pack(side="left", padx=6)
-        tk.Button(btns, text="Valider", command=self.on_ok).pack(side="right")
-        tk.Button(btns, text="Annuler", command=self.on_cancel).pack(side="right", padx=6)
-
-        self.bind("<Return>", lambda e: self.on_ok())
-        self.bind("<Escape>", lambda e: self.on_cancel())
-        self.transient(master)
-        self.grab_set()
-        self.lb.focus_set()
-
-    def sel_all(self):
-        self.lb.select_set(0, tk.END)
-
-    def sel_none(self):
-        self.lb.select_clear(0, tk.END)
-
-    def on_ok(self):
-        self.result = list(self.lb.curselection())
-        self.destroy()
-
-    def on_cancel(self):
-        self.result = None
-        self.destroy()
