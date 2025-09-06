@@ -1,0 +1,25 @@
+Objectif: Réaliser une relecture **Relecture des offres** du document `input/23.438_SERHY_Prédiagnostic écologique Lavaldens - rive droite (38) (copie 1).docx`, en considérant toutes les pages.
+
+Contrainte: Ne pas utiliser d’API. Travailler dans le dépôt local. Produire **uniquement**:
+- `c:\Users\utilisateur\Mon Drive\1 - Bota & Travail\+++++++++  BOTA  +++++++++\---------------------- 3) BDD\PYTHON\0) Scripts Python\Agent-relecture\output\23.438_SERHY_Prédiagnostic écologique Lavaldens - rive droite (38) (copie 1)_AI_suivi+commentaires.docx` — copie du DOCX original avec révisions suivies et commentaires intégrés.
+
+Référentiels à mobiliser:
+- Checklist: `modes/offre/instructions/checklist.md`
+- PDF de référence: dossiers `modes/offre/refs/` (le cas échéant convertis en texte via `tools/extract_refs.ps1 -Mode offre` qui écrit dans `work/refs_txt/offre/`).
+
+Règles d’analyse:
+- Appliquer strictement la checklist du mode.
+- Citer preuves et pages quand possible; tolérance zéro copier-coller résiduel.
+- Poser **une seule** question fermée **uniquement si** un point critique empêche une conclusion fiable; sinon formuler une hypothèse explicite.
+
+Exécution locale attendue (par l’agent, de bout en bout):
+- Lire `input/23.438_SERHY_Prédiagnostic écologique Lavaldens - rive droite (38) (copie 1).docx` (focus: toutes les pages).
+- Lire `modes/offre/instructions/checklist.md` + les textes `work/refs_txt/offre/*.txt` s’ils existent. Si absent, exécuter `powershell -ExecutionPolicy Bypass -File tools/extract_refs.ps1 -Mode offre`.
+- Écrire TEMPORAIREMENT: `work/rapport_revise.md` (version révisée intégrale, structure conservée) et `work/commentaires.csv` (schéma exact: `ancre_textuelle,commentaire,gravite,categorie`; gravite∈{P1,P2,P3}; categorie∈{coherence,methodologie,reglementaire,carto,redaction}). L’`ancre_textuelle` doit être un court extrait LITTÉRAL du paragraphe révisé ciblé (pas un ID HTML), unique par paragraphe.
+- Générer le DOCX final en lançant `powershell -ExecutionPolicy Bypass -File tools/run_pipeline.ps1 -Cleanup` (Word COM: Compare + insertion des commentaires), ce qui crée `c:\Users\utilisateur\Mon Drive\1 - Bota & Travail\+++++++++  BOTA  +++++++++\---------------------- 3) BDD\PYTHON\0) Scripts Python\Agent-relecture\output\23.438_SERHY_Prédiagnostic écologique Lavaldens - rive droite (38) (copie 1)_AI_suivi+commentaires.docx` et supprime les fichiers temporaires dans `work/`.
+- Ne laisser en fin de tâche QUE le fichier `c:\Users\utilisateur\Mon Drive\1 - Bota & Travail\+++++++++  BOTA  +++++++++\---------------------- 3) BDD\PYTHON\0) Scripts Python\Agent-relecture\output\23.438_SERHY_Prédiagnostic écologique Lavaldens - rive droite (38) (copie 1)_AI_suivi+commentaires.docx`.
+
+Contraintes de rédaction:
+- Style sobre, technique, factuel. Pas de superlatifs.
+- Tables en Markdown simple. Titres conservés.
+- Ancre courte et unique par paragraphe ciblé.
