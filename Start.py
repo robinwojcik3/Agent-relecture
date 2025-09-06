@@ -71,7 +71,7 @@ class Section:
 
 def analyze_sections(docx_path: str):
     if Document is None:
-        raise RuntimeError("python-docx manquant. Installez le paquet 'python-docx'.")
+        raise RuntimeError("python-docx manquant. Cliquez sur ‘Installer dépendances…’ ou installez: pip install python-docx lxml")
     doc = Document(docx_path)
     secs = []
     for i, p in enumerate(doc.paragraphs):
@@ -363,6 +363,29 @@ class App(tk.Tk):
 
         self._build_ui()
 
+    # --- deps ---
+    def ensure_docx(self) -> bool:
+        global Document
+        if Document is not None:
+            return True
+        try:
+            import importlib
+            Document = importlib.import_module('docx').Document
+            return True
+        except Exception:
+            pass
+        # Try on-the-fly install
+        try:
+            self.log("Installation de python-docx (et lxml)…")
+            subprocess.run([sys.executable, "-m", "pip", "install", "python-docx", "lxml"], check=True)
+            import importlib
+            Document = importlib.import_module('docx').Document
+            self.log("python-docx installé avec succès.")
+            return True
+        except Exception as e:
+            self.log(f"Échec installation python-docx: {e}")
+            return False
+
     def log(self, msg: str):
         self.log_txt.configure(state="normal")
         self.log_txt.insert(tk.END, f"{datetime.now().strftime('%H:%M:%S')} — {msg}\n")
@@ -394,6 +417,7 @@ class App(tk.Tk):
         btns2 = tk.Frame(frame2)
         btns2.pack(anchor="w", padx=10, pady=5)
         tk.Button(btns2, text="Afficher les sections", command=self.show_sections).pack(side="left", padx=5)
+        tk.Button(btns2, text="Installer dépendances…", command=self.install_deps).pack(side="left", padx=5)
         self.sections_count_var = tk.StringVar(value="0 section sélectionnée")
         tk.Label(btns2, textvariable=self.sections_count_var).pack(side="left", padx=10)
 
@@ -511,6 +535,9 @@ class App(tk.Tk):
         if not self.copy_relpath:
             messagebox.showwarning("Manque fichier", "Sélectionnez d’abord un fichier Word.")
             return
+        if not self.ensure_docx():
+            messagebox.showerror("Dépendances manquantes", "python-docx introuvable. Essayez ‘Installer dépendances…’ ou exécutez:\npython -m pip install python-docx lxml")
+            return
         self.clear_sections_ui()
         try:
             abs_path = os.path.join(ROOT, self.copy_relpath)
@@ -549,6 +576,13 @@ class App(tk.Tk):
         except Exception as e:
             messagebox.showerror("Erreur", f"Impossible d’analyser les sections:\n{e}")
 
+    def install_deps(self):
+        ok = self.ensure_docx()
+        if ok:
+            messagebox.showinfo("OK", "Dépendances installées.")
+        else:
+            messagebox.showerror("Erreur", "Impossible d’installer python-docx automatiquement. Installez manuellement:\npython -m pip install python-docx lxml")
+
     def update_sections_count(self):
         n = sum(1 for v in self.section_vars if v.get())
         self.sections_count_var.set(f"{n} section(s) sélectionnée(s)")
@@ -573,6 +607,9 @@ class App(tk.Tk):
             return
         if not self.mode:
             messagebox.showwarning("Manque mode", "Veuillez sélectionner un mode de relecture.")
+            return
+        if not self.ensure_docx():
+            messagebox.showerror("Dépendances manquantes", "python-docx introuvable. Essayez ‘Installer dépendances…’.")
             return
         selected_idx = [i for i, v in enumerate(self.section_vars) if v.get()]
         if not selected_idx:
