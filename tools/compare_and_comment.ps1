@@ -8,18 +8,32 @@ $ErrorActionPreference = "Stop"
 $wdFormatDocumentDefault = 16
 $wdFindContinue = 1
 
+# Resolve input paths early with LiteralPath (handles spaces/accents)
+$origPath = (Resolve-Path -LiteralPath $OriginalDocx).Path
+$revPath  = (Resolve-Path -LiteralPath $RevisedDocx).Path
+$csvPath  = $null
+if (Test-Path -LiteralPath $CommentsCsv) { $csvPath = (Resolve-Path -LiteralPath $CommentsCsv).Path }
+
+# Stage files into a short TEMP folder to avoid MAX_PATH/encoding issues with Office COM
+$stage = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath ("word_compare_" + [System.Guid]::NewGuid().ToString("N"))
+New-Item -ItemType Directory -Path $stage | Out-Null
+$stageOrig = Join-Path $stage 'orig.docx'
+$stageRev  = Join-Path $stage 'rev.docx'
+$stageCsv  = Join-Path $stage 'comments.csv'
+Copy-Item -LiteralPath $origPath -Destination $stageOrig -Force
+Copy-Item -LiteralPath $revPath  -Destination $stageRev  -Force
+if ($csvPath) { Copy-Item -LiteralPath $csvPath -Destination $stageCsv -Force }
+
 $word = New-Object -ComObject Word.Application
 $word.Visible = $false
 try {
-$origPath = (Resolve-Path -LiteralPath $OriginalDocx).Path
-$revPath  = (Resolve-Path -LiteralPath $RevisedDocx).Path
-$orig = $word.Documents.Open($origPath)
-$rev  = $word.Documents.Open($revPath)
+  $orig = $word.Documents.Open($stageOrig)
+  $rev  = $word.Documents.Open($stageRev)
   $orig.Compare($rev)
   $comp = $word.ActiveDocument
 
-  if (Test-Path $CommentsCsv) {
-    $rows = Import-Csv -Path $CommentsCsv
+  if (Test-Path -LiteralPath $stageCsv) {
+    $rows = Import-Csv -LiteralPath $stageCsv
     foreach ($row in $rows) {
       $anchor = $row.ancre_textuelle
       $note   = $row.commentaire
@@ -34,11 +48,16 @@ $rev  = $word.Documents.Open($revPath)
     }
   }
 
-  $outDir = Split-Path -Parent $OutputDocx
-  if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir | Out-Null }
-  $comp.SaveAs([ref]$OutputDocx, [ref]$wdFormatDocumentDefault)
+  # Save to a short temp path first, then copy to target (avoids Office SaveAs long path limits)
+  $stageOut = Join-Path $stage 'out.docx'
+  $comp.SaveAs([ref]$stageOut, [ref]$wdFormatDocumentDefault)
 } finally {
   foreach ($d in @($word.Documents)) { try { $d.Close($false) } catch {} }
   $word.Quit()
   [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($word)
 }
+
+# Ensure destination directory exists and copy result
+$outDir = Split-Path -Parent $OutputDocx
+if (-not (Test-Path -LiteralPath $outDir)) { New-Item -ItemType Directory -Path $outDir | Out-Null }
+Copy-Item -LiteralPath $stageOut -Destination $OutputDocx -Force
