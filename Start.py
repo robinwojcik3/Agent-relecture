@@ -421,16 +421,11 @@ class App(tk.Tk):
         self.sections_count_var = tk.StringVar(value="0 section sélectionnée")
         tk.Label(btns2, textvariable=self.sections_count_var).pack(side="left", padx=10)
 
-        self.sections_canvas = tk.Canvas(frame2, height=180)
+        # Zone placeholder (reste vide; la sélection se fait dans une fenêtre dédiée scrollable)
+        self.sections_canvas = tk.Canvas(frame2, height=120)
         self.sections_canvas.pack(fill="x", padx=10, pady=5)
         self.sections_frame = tk.Frame(self.sections_canvas)
-        self.sections_scroll = ttk.Scrollbar(frame2, orient="vertical", command=self.sections_canvas.yview)
-        self.sections_scroll.pack(side="right", fill="y")
-        self.sections_canvas.configure(yscrollcommand=self.sections_scroll.set)
         self.sections_canvas.create_window((0, 0), window=self.sections_frame, anchor="nw")
-        self.sections_frame.bind(
-            "<Configure>", lambda e: self.sections_canvas.configure(scrollregion=self.sections_canvas.bbox("all"))
-        )
 
         # 3) Mode de relecture
         frame3 = tk.LabelFrame(self, text="3) Mode de relecture")
@@ -546,32 +541,27 @@ class App(tk.Tk):
                 self.log("Aucune table des matières détectée. Bascule vers les styles de titres.")
                 secs = analyze_sections(abs_path)
             self.sections = secs
-            for idx, s in enumerate(secs):
-                var = tk.BooleanVar(value=False)
-                self.section_vars.append(var)
-                indent = "    " * (max(0, s.level - 1))
-                row = tk.Frame(self.sections_frame)
-                row.pack(anchor="w")
-                cb = tk.Checkbutton(
-                    row,
-                    text=f"{indent}☐ {s.label()}",
-                    variable=var,
-                    onvalue=True,
-                    offvalue=False,
-                    anchor="w",
-                    justify="left",
-                )
-                cb.pack(anchor="w", fill="x")
-
-                def _mkcmd(v=var, w=cb):
-                    def _cmd():
-                        checked = v.get()
-                        txt = w.cget("text")
-                        w.configure(text=(txt.replace("☐", "☑") if checked else txt.replace("☑", "☐")))
-                        self.update_sections_count()
-                    return _cmd
-
-                cb.configure(command=_mkcmd())
+            # Ouvrir la fenêtre modale scrollable pour sélectionner
+            pre = [i for i, v in enumerate(self.section_vars) if v.get()] if self.section_vars else []
+            dlg = SectionsDialog(self, secs, pre)
+            self.wait_window(dlg)
+            if dlg.result is not None:
+                # Recréer les vars selon résultat
+                self.section_vars = []
+                selected = set(dlg.result)
+                for i in range(len(secs)):
+                    self.section_vars.append(tk.BooleanVar(value=(i in selected)))
+                # Afficher un petit résumé (les 6 premiers labels) dans la zone placeholder
+                for w in list(self.sections_frame.children.values()):
+                    w.destroy()
+                summary = [secs[i].label() for i in sorted(selected)][:6]
+                if summary:
+                    for lab in summary:
+                        tk.Label(self.sections_frame, text=f"☑ {lab}", anchor="w").pack(anchor="w")
+                    if len(selected) > 6:
+                        tk.Label(self.sections_frame, text="…", anchor="w").pack(anchor="w")
+                else:
+                    tk.Label(self.sections_frame, text="(document entier)", anchor="w").pack(anchor="w")
             self.update_sections_count()
         except Exception as e:
             messagebox.showerror("Erreur", f"Impossible d’analyser les sections:\n{e}")
@@ -692,3 +682,61 @@ class App(tk.Tk):
 
 if __name__ == "__main__":
     App().mainloop()
+
+
+# ---------------------- Fenêtre de sélection ----------------------
+
+class SectionsDialog(tk.Toplevel):
+    def __init__(self, master, sections, preselected_idx=None):
+        super().__init__(master)
+        self.title("Sélection des sections")
+        self.geometry("560x420")
+        self.resizable(True, True)
+        self.sections = sections
+        self.result = None
+        self.selected = set(preselected_idx or [])
+
+        frm = tk.Frame(self)
+        frm.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Listbox multisélection avec scrollbar
+        self.lb = tk.Listbox(frm, selectmode=tk.MULTIPLE, activestyle="none")
+        sb = ttk.Scrollbar(frm, orient="vertical", command=self.lb.yview)
+        self.lb.configure(yscrollcommand=sb.set)
+        self.lb.pack(side="left", fill="both", expand=True)
+        sb.pack(side="right", fill="y")
+
+        # Remplir
+        for i, s in enumerate(sections):
+            indent = "    " * (max(0, s.level - 1))
+            self.lb.insert(tk.END, f"{indent}{s.label()}")
+            if i in self.selected:
+                self.lb.selection_set(i)
+
+        # Actions
+        btns = tk.Frame(self)
+        btns.pack(fill="x", padx=10, pady=(0, 10))
+        tk.Button(btns, text="Tout cocher", command=self.sel_all).pack(side="left")
+        tk.Button(btns, text="Tout décocher", command=self.sel_none).pack(side="left", padx=6)
+        tk.Button(btns, text="Valider", command=self.on_ok).pack(side="right")
+        tk.Button(btns, text="Annuler", command=self.on_cancel).pack(side="right", padx=6)
+
+        self.bind("<Return>", lambda e: self.on_ok())
+        self.bind("<Escape>", lambda e: self.on_cancel())
+        self.transient(master)
+        self.grab_set()
+        self.lb.focus_set()
+
+    def sel_all(self):
+        self.lb.select_set(0, tk.END)
+
+    def sel_none(self):
+        self.lb.select_clear(0, tk.END)
+
+    def on_ok(self):
+        self.result = list(self.lb.curselection())
+        self.destroy()
+
+    def on_cancel(self):
+        self.result = None
+        self.destroy()
