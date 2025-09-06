@@ -11,8 +11,10 @@ $wdFindContinue = 1
 $word = New-Object -ComObject Word.Application
 $word.Visible = $false
 try {
-  $orig = $word.Documents.Open((Resolve-Path $OriginalDocx))
-  $rev  = $word.Documents.Open((Resolve-Path $RevisedDocx))
+$origPath = (Resolve-Path -LiteralPath $OriginalDocx).Path
+$revPath  = (Resolve-Path -LiteralPath $RevisedDocx).Path
+$orig = $word.Documents.Open($origPath)
+$rev  = $word.Documents.Open($revPath)
   $orig.Compare($rev)
   $comp = $word.ActiveDocument
 
@@ -40,4 +42,3 @@ try {
   $word.Quit()
   [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($word)
 }
-
