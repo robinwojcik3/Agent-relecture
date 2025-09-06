@@ -1,0 +1,8 @@
+*.md text eol=lf
+*.csv text eol=lf
+*.ps1 text eol=lf
+*.py text eol=lf
+*.bat text eol=crlf
+*.docx binary
+*.pdf binary
+
