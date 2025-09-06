@@ -321,12 +321,39 @@ def write_comments_csv(rows, path: str):
 
 
 def run_compare_and_comment(original_docx: str, revised_docx: str, comments_csv: str, output_docx: str):
+    """Run the PowerShell compare script and surface detailed errors.
+
+    Uses -NoProfile and captures stdout/stderr so that any failure inside
+    PowerShell/Word is clearly shown to the user instead of only the exit code.
+    Also normalizes paths to avoid issues with spaces, accents and '&'.
+    """
     ps1 = os.path.join(ROOT, "tools", "compare_and_comment.ps1")
     if not os.path.exists(ps1):
         raise RuntimeError("tools/compare_and_comment.ps1 manquant")
+
+    # Ensure output directory exists
     os.makedirs(os.path.dirname(output_docx), exist_ok=True)
+
+    # Normalize to absolute paths
+    ps1 = os.path.normpath(os.path.abspath(ps1))
+    original_docx = os.path.normpath(os.path.abspath(original_docx))
+    revised_docx = os.path.normpath(os.path.abspath(revised_docx))
+    comments_csv = os.path.normpath(os.path.abspath(comments_csv))
+    output_docx = os.path.normpath(os.path.abspath(output_docx))
+
+    # Quick sanity checks for clearer error messages
+    for p, label in [
+        (original_docx, "OriginalDocx"),
+        (revised_docx, "RevisedDocx"),
+        (comments_csv, "CommentsCsv"),
+    ]:
+        if not os.path.exists(p):
+            raise RuntimeError(f"Fichier introuvable pour {label}: {p}")
+
     cmd = [
         "powershell",
+        "-NoLogo",
+        "-NoProfile",
         "-ExecutionPolicy",
         "Bypass",
         "-File",
@@ -340,7 +367,16 @@ def run_compare_and_comment(original_docx: str, revised_docx: str, comments_csv:
         "-OutputDocx",
         output_docx,
     ]
-    subprocess.run(cmd, check=True)
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as e:
+        details = []
+        if e.stdout:
+            details.append("STDOUT:\n" + e.stdout.strip())
+        if e.stderr:
+            details.append("STDERR:\n" + e.stderr.strip())
+        det = ("\n\n".join(details)).strip()
+        raise RuntimeError(f"Word Compare a �%chou� (code {e.returncode}).\n\n{det}".rstrip()) from e
 
 
 # ---------------------- Fenêtre de sélection ----------------------
@@ -751,7 +787,9 @@ class App(tk.Tk):
             markdown_to_docx(revised_md, revised_docx)
 
             self.log("Comparaison et insertion des commentaires…")
-            out_name = f"{base_name}_AI_suivi+commentaires_{ts_now()}.docx"
+            # Avoid very long filenames which can exceed MAX_PATH in some setups
+            base_short = (base_name[:60]).rstrip(" _-.")
+            out_name = f"{base_short}_AI_suivi+commentaires_{ts_now()}.docx"
             out_docx = os.path.join(self.output_dir, out_name)
             run_compare_and_comment(cut_docx, revised_docx, csv_path, out_docx)
         except subprocess.CalledProcessError as pe:

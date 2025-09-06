@@ -1,0 +1,250 @@
+#!/usr/bin/env python3
+import os
+import sys
+import json
+import csv
+import shutil
+import subprocess
+from datetime import datetime
+import tkinter as tk
+from tkinter import filedialog, messagebox, ttk
+
+try:
+    from docx import Document
+except Exception:
+    Document = None
+
+MODES = [
+    ("offre", "Offre"),
+    ("diagnostic", "Diagnostic"),
+    ("impacts", "Impacts"),
+    ("mesures", "Mesures"),
+]
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+INPUT_DIR = os.path.join(ROOT, "input")
+WORK_DIR = os.path.join(ROOT, "work")
+OUTPUT_DIR = os.path.join(ROOT, "output")
+
+os.makedirs(INPUT_DIR, exist_ok=True)
+os.makedirs(WORK_DIR, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+# ------------------------- utilitaires -------------------------
+
+
+def ts_now():
+    return datetime.now().strftime("%Y%m%d_%H%M%S")
+
+
+def norm_style_name(name: str) -> str:
+    if not name:
+        return ""
+    return name.strip().lower()
+
+
+def detect_head_level(style_name: str):
+    n = norm_style_name(style_name)
+    # Support FR/EN: "Titre 1/2/3" or "Heading 1/2/3"
+    for prefix in ("heading ", "titre "):
+        if n.startswith(prefix):
+            try:
+                return int(n.split(prefix, 1)[1].split()[0])
+            except Exception:
+                return None
+    return None
+
+
+class Section:
+    def __init__(self, title: str, level: int, start_index: int):
+        self.title = title.strip()
+        self.level = level
+        self.start_index = start_index  # index of paragraph in doc.paragraphs
+        self.end_index = None  # to be set after pass
+        self.number = None  # computed like 1., 2.1, etc.
+
+    def label(self) -> str:
+        num = (self.number or "?")
+        return f"{num} {self.title}".strip()
+
+
+def analyze_sections(docx_path: str):
+    if Document is None:
+        raise RuntimeError("python-docx manquant. Cliquez sur ‘Installer dépendances…’ ou installez: pip install python-docx lxml")
+    doc = Document(docx_path)
+    secs = []
+    for i, p in enumerate(doc.paragraphs):
+        lvl = detect_head_level(getattr(p.style, "name", ""))
+        if lvl is not None and lvl >= 1:
+            txt = p.text.strip()
+            if txt:
+                secs.append(Section(txt, lvl, i))
+    # determine end_index by next section start
+    for idx, s in enumerate(secs):
+        s.end_index = (secs[idx + 1].start_index if idx + 1 < len(secs) else len(doc.paragraphs))
+    # compute numbering by counters
+    counters = {}
+    for s in secs:
+        for k in list(counters.keys()):
+            if k > s.level:
+                counters.pop(k, None)
+        counters[s.level] = counters.get(s.level, 0) + 1
+        parts = [str(counters.get(l, 0)) for l in range(1, s.level + 1)]
+        s.number = ".".join(parts)
+    return secs
+
+
+def filter_paragraphs_by_sections(docx_path: str, chosen: list, sections: list) -> str:
+    """
+    Build a new DOCX with only the paragraphs belonging to selected sections.
+    chosen: indices into `sections` list.
+    Returns path to new docx.
+    """
+    doc = Document(docx_path)
+    new = Document()
+    included_ranges = []
+    chosen_set = set(chosen)
+    # Expand: if a parent is chosen, include all its content until next section
+    for i, s in enumerate(sections):
+        if i in chosen_set:
+            start = s.start_index
+            end = s.end_index
+            included_ranges.append((start, end))
+    if not included_ranges:
+        included_ranges = [(0, len(doc.paragraphs))]
+
+    def add_paragraph_like(p_src):
+        text = p_src.text
+        if not text and not p_src.runs:
+            new.add_paragraph("")
+            return
+        p = new.add_paragraph()
+        try:
+            p.style = p_src.style
+        except Exception:
+            pass
+        for r in p_src.runs:
+            nr = p.add_run(r.text)
+            try:
+                nr.bold = r.bold
+                nr.italic = r.italic
+                nr.underline = r.underline
+            except Exception:
+                pass
+
+    for (a, b) in included_ranges:
+        for i in range(a, b):
+            add_paragraph_like(doc.paragraphs[i])
+
+    base = os.path.splitext(os.path.basename(docx_path))[0]
+    out = os.path.join(WORK_DIR, f"{base}_SECTIONS_{ts_now()}.docx")
+    new.save(out)
+    return out
+
+
+def docx_to_markdown(docx_path: str) -> str:
+    doc = Document(docx_path)
+    lines = []
+    for p in doc.paragraphs:
+        lvl = detect_head_level(getattr(p.style, "name", ""))
+        t = (p.text or "").strip()
+        if not t:
+            lines.append("")
+            continue
+        if lvl is not None and 1 <= lvl <= 6:
+            lines.append("#" * lvl + " " + t)
+        else:
+            lines.append(t)
+    return "\n".join(lines) + "\n"
+
+
+def sanitize_text(s: str) -> str:
+    import re
+    s = s.replace("\u00A0", " ")
+    s = re.sub(r"\s+", " ", s)
+    s = re.sub(r"\s+([,;:!?])", r"\1", s)
+    s = re.sub(r"\(\s+", "(", s)
+    s = re.sub(r"\s+\)", ")", s)
+    return s.strip()
+
+
+ALLOWED_CATEGORIES = ["coherence", "methodologie", "reglementaire", "carto", "redaction"]
+
+
+def load_checklist(mode: str):
+    path = os.path.join(ROOT, "modes", mode, "instructions", "checklist.md")
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            lines = [ln.strip(" \t-•") for ln in f.read().splitlines()]
+        return [l for l in lines if l and not l.startswith("#")]
+    except Exception:
+        return []
+
+
+def classify_comment_from_text(txt: str, mode: str):
+    t = txt.lower()
+    if any(k in t for k in ["méthod", "methodo", "protocole", "phases", "jalon"]):
+        return ("P2", "methodologie")
+    if any(k in t for k in ["réglement", "natura 2000", "code", "loi", "eau"]):
+        return ("P2", "reglementaire")
+    if any(k in t for k in ["carte", "carto", "figure", "légende"]):
+        return ("P3", "carto")
+    if any(k in t for k in ["cohér", "coherence", "cohérence"]):
+        return ("P2", "coherence")
+    return ("P3", "redaction")
+
+
+def generate_review(md_in: str, mode: str):
+    """
+    Returns revised_md, comments rows.
+    comments rows: list of dict with keys ancre_textuelle, commentaire, gravite, categorie
+    """
+    import re
+    lines = md_in.splitlines()
+    revised_lines = []
+    comments = []
+    checklist = load_checklist(mode)
+
+    used_anchors = {}
+
+    def anchor_for(text: str) -> str:
+        base = sanitize_text(text)[:20]
+        base = re.sub(r"[^A-Za-z0-9À-ÿ\-\s]", "", base)
+        base = re.sub(r"\s+", " ", base).strip()
+        if not base:
+            base = "ancre"
+        k = base
+        i = 1
+        while k.lower() in used_anchors:
+            i += 1
+            k = f"{base} {i}"
+        used_anchors[k.lower()] = True
+        return k
+
+    full_text = "\n".join(lines).lower()
+    # Find first heading text to anchor generic comments if any
+    first_heading_text = None
+    for ln_h in lines:
+        if ln_h.startswith("#"):
+            first_heading_text = sanitize_text(ln_h.lstrip("#").strip())
+            break
+    for item in checklist:
+        key = item.split(":")[0]
+        if key and key.lower() not in full_text:
+            grav, cat = classify_comment_from_text(item, mode)
+            comments.append(
+                {
+                    "ancre_textuelle": (first_heading_text or "Introduction"),
+                    "commentaire": f"Vérifier couverture de la checklist: '{item}'.",
+                    "gravite": grav,
+                    "categorie": cat,
+                }
+            )
+
+    for ln in lines:
+        raw = ln.rstrip()
+        if not raw.strip():
+            revised_lines.append("")
+            continue
+        if raw.startswith("#"):

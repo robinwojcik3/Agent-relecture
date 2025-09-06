@@ -1,4 +1,4 @@
-L�?Tutilisateur souhaite mettre en place, dans un dǸp��t dǸdiǸ, une vǸritable �?oinfrastructure de relecture assistǸe par IA�?? qui soit structurǸe, claire et ergonomique. L�?TidǸe n�?Test pas simplement d�?Tavoir un super-prompt ponctuel �� lancer dans ChatGPT, mais plut��t de concevoir un environnement complet qui encadre et normalise le processus de relecture des documents d�?TǸtude. L�?Tobjectif est de pouvoir dǸposer un rapport (souvent un document Word volumineux, parfois de plusieurs centaines de pages) dans un dossier unique, puis de dǸclencher une sǸquence de travail guidǸe, o�� l�?Tagent IA applique une mǸthode standardisǸe pour analyser le rapport et restituer les rǸsultats de mani��re directement exploitable.
+﻿L�?Tutilisateur souhaite mettre en place, dans un dǸp��t dǸdiǸ, une vǸritable �?oinfrastructure de relecture assistǸe par IA�?? qui soit structurǸe, claire et ergonomique. L�?TidǸe n�?Test pas simplement d�?Tavoir un super-prompt ponctuel �� lancer dans ChatGPT, mais plut��t de concevoir un environnement complet qui encadre et normalise le processus de relecture des documents d�?TǸtude. L�?Tobjectif est de pouvoir dǸposer un rapport (souvent un document Word volumineux, parfois de plusieurs centaines de pages) dans un dossier unique, puis de dǸclencher une sǸquence de travail guidǸe, o�� l�?Tagent IA applique une mǸthode standardisǸe pour analyser le rapport et restituer les rǸsultats de mani��re directement exploitable.
 
 Au c�"ur de cette organisation, l�?Tutilisateur imagine quatre grandes catǸgories de relecture, correspondant aux diffǸrents types de livrables ou de sections critiques qu�?Til a �� traiter dans son mǸtier : la relecture des offres, la relecture du diagnostic (VNEI, Ǹtat initial), la relecture des impacts, et la relecture des mesures (Ǹvitement, rǸduction, compensation, suivi). Ces quatre modes sont con��us comme des modules distincts, chacun possǸdant sa propre logique, ses propres checklists mǸthodologiques et ses propres documents de rǸfǸrence. L�?Tutilisateur veut que le dǸp��t contienne donc, pour chaque mode, un dossier regroupant une checklist dǸtaillǸe (un fichier texte clair et normatif qui guide l�?TIA sur ce qu�?Til faut vǸrifier) et un espace pour stocker les documents de rǸfǸrence (guides mǸthodologiques, rǸglementations, normes, etc.). Cette structuration permet de garantir que la relecture ne repose pas seulement sur le texte du rapport, mais qu�?Telle est aussi ancrǸe dans les bonnes pratiques et exigences rǸglementaires, en fonction du contexte de relecture choisi.
 
@@ -92,6 +92,12 @@ Spécification GUI et Orchestration — V2
   - L’original dans `input/` n’est jamais ouvert en écriture.
   - Toutes les écritures se font dans `work/` et `output/`.
   - Aucune étape utilisateur supplémentaire n’est requise après « Lancer l’analyse ». Le processus est intégralement automatisé. Le seul contrôle humain est de vérifier le fichier final dans `output/`.
+
+## Gestion de l'encodage
+
+Tous les fichiers du repository doivent être strictement encodés en UTF-8. Aucune intervention d'un agent IA ne doit jamais produire de corruption de type "mojibake" (séquences illisibles comme Ã©, Ã¨, â€™, â€¦).
+
+**Règle impérative :** Toute lecture ou écriture de fichier doit être effectuée explicitement en UTF-8. Avant validation, il est impératif de s'assurer que le contenu conserve un affichage en français correct avec accents, caractères typographiques (é, è, à, ç, œ, °, …) et ponctuation. Toute apparition de mojibake est considérée comme une erreur critique bloquante et doit être corrigée immédiatement.
 
 - Livrable attendu de cette tâche
   - Une interface Start.py conforme aux exigences ci-dessus, opérationnelle de bout en bout.
