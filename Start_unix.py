@@ -57,6 +57,17 @@ def _setup_file_logger():
 
 LOGGER = _setup_file_logger()
 
+# Journaliser toute exception non interceptée
+def _global_excepthook(exc_type, exc_value, exc_traceback):
+    try:
+        if issubclass(exc_type, KeyboardInterrupt):
+            return
+        LOGGER.exception("Exception non gérée", exc_info=(exc_type, exc_value, exc_traceback))
+    except Exception:
+        pass
+
+sys.excepthook = _global_excepthook
+
 
 # ------------------------- utilitaires -------------------------
 
@@ -399,6 +410,10 @@ def run_compare_and_comment(original_docx: str, revised_docx: str, comments_csv:
         qp(output_docx),
     ]
     try:
+        LOGGER.info(f"Word Compare start | Original: {original_docx} | Revised: {revised_docx} | Comments: {comments_csv} | Output: {output_docx}")
+    except Exception:
+        pass
+    try:
         # Capture as text to avoid str/bytes concatenation issues; tolerate encoding quirks
         subprocess.run(
             cmd,
@@ -415,6 +430,10 @@ def run_compare_and_comment(original_docx: str, revised_docx: str, comments_csv:
         if e.stderr:
             details.append("STDERR:\n" + e.stderr.strip())
         det = ("\n\n".join(details)).strip()
+        try:
+            LOGGER.error(f"Word Compare failed (code {e.returncode})\n{det}")
+        except Exception:
+            pass
         raise RuntimeError(f"Word Compare a �%chou� (code {e.returncode}).\n\n{det}".rstrip()) from e
 
 
@@ -844,4 +863,20 @@ class App(tk.Tk):
 
 
 if __name__ == "__main__":
+    # Augmenter le log: répliquer chaque App.log(...) dans le fichier
+    try:
+        _orig_log = getattr(App, "log", None)
+        if callable(_orig_log):
+            def _wrapped_log(self, msg: str):
+                try:
+                    LOGGER.info(str(msg))
+                except Exception:
+                    pass
+                return _orig_log(self, msg)
+            App.log = _wrapped_log
+            LOGGER.info("Hook de App.log installé")
+    except Exception:
+        LOGGER.exception("Echec d'installation du hook de log")
+
+    LOGGER.info("Lancement de l'interface graphique")
     App().mainloop()
