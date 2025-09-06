@@ -6,6 +6,8 @@ import csv
 import shutil
 import subprocess
 from datetime import datetime
+import logging
+import traceback
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
@@ -25,10 +27,35 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 INPUT_DIR = os.path.join(ROOT, "input")
 WORK_DIR = os.path.join(ROOT, "work")
 OUTPUT_DIR = os.path.join(ROOT, "output")
+LOG_PATH = os.path.join(ROOT, "log_erreur.log")
 
 os.makedirs(INPUT_DIR, exist_ok=True)
 os.makedirs(WORK_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+# ------------------------- logging fichier -------------------------
+
+def _setup_file_logger():
+    logger = logging.getLogger("agent_relecture")
+    if logger.handlers:
+        return logger
+    logger.setLevel(logging.INFO)
+    fh = logging.FileHandler(LOG_PATH, encoding="utf-8")
+    fmt = logging.Formatter("%(asctime)s %(levelname)s: %(message)s")
+    fh.setFormatter(fmt)
+    logger.addHandler(fh)
+    # Optionnel: loger aussi sur la console lorsque lancé depuis terminal
+    ch = logging.StreamHandler(stream=sys.stdout)
+    ch.setFormatter(fmt)
+    ch.setLevel(logging.WARNING)
+    logger.addHandler(ch)
+    logger.info("=== Nouvelle exécution démarrée ===")
+    logger.info(f"Racine: {ROOT}")
+    return logger
+
+
+LOGGER = _setup_file_logger()
 
 
 # ------------------------- utilitaires -------------------------
@@ -372,8 +399,15 @@ def run_compare_and_comment(original_docx: str, revised_docx: str, comments_csv:
         qp(output_docx),
     ]
     try:
-        # Capture raw bytes to avoid UnicodeDecodeError with Windows PowerShell streams
-        subprocess.run(cmd, check=True, capture_output=True, text=False)
+        # Capture as text to avoid str/bytes concatenation issues; tolerate encoding quirks
+        subprocess.run(
+            cmd,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
     except subprocess.CalledProcessError as e:
         details = []
         if e.stdout:
