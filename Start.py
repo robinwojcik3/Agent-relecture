@@ -351,7 +351,7 @@ def run_compare_and_comment(original_docx: str, revised_docx: str, comments_csv:
             raise RuntimeError(f"Fichier introuvable pour {label}: {p}")
 
     cmd = [
-        "powershell",
+        "powershell.exe",
         "-NoLogo",
         "-NoProfile",
         "-ExecutionPolicy",
@@ -368,13 +368,35 @@ def run_compare_and_comment(original_docx: str, revised_docx: str, comments_csv:
         output_docx,
     ]
     try:
-        subprocess.run(cmd, check=True, capture_output=True, text=True)
+        # Capture raw bytes to avoid UnicodeDecodeError with Windows PowerShell streams
+        subprocess.run(cmd, check=True, capture_output=True, text=False)
     except subprocess.CalledProcessError as e:
+        # Decode PowerShell output robustly
+        if isinstance(e.stdout, (bytes, bytearray)):
+            try:
+                so = (e.stdout or b"").decode("utf-16le")
+            except Exception:
+                try:
+                    so = (e.stdout or b"").decode("utf-8")
+                except Exception:
+                    so = (e.stdout or b"").decode("cp1252", errors="replace")
+        else:
+            so = e.stdout or ""
+        if isinstance(e.stderr, (bytes, bytearray)):
+            try:
+                se = (e.stderr or b"").decode("utf-16le")
+            except Exception:
+                try:
+                    se = (e.stderr or b"").decode("utf-8")
+                except Exception:
+                    se = (e.stderr or b"").decode("cp1252", errors="replace")
+        else:
+            se = e.stderr or ""
         details = []
-        if e.stdout:
-            details.append("STDOUT:\n" + e.stdout.strip())
-        if e.stderr:
-            details.append("STDERR:\n" + e.stderr.strip())
+        if so.strip():
+            details.append("STDOUT:\n" + so.strip())
+        if se.strip():
+            details.append("STDERR:\n" + se.strip())
         det = ("\n\n".join(details)).strip()
         raise RuntimeError(f"Word Compare a �%chou� (code {e.returncode}).\n\n{det}".rstrip()) from e
 
