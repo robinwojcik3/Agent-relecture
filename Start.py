@@ -565,8 +565,16 @@ class App(tk.Tk):
     def _build_ui(self):
         pad = {"padx": 10, "pady": 8}
 
+        # Deux colonnes: gauche (actions) / droite (prompt)
+        main_panes = tk.PanedWindow(self, orient=tk.HORIZONTAL)
+        main_panes.pack(fill="both", expand=True)
+        left_panel = tk.Frame(main_panes)
+        right_panel = tk.Frame(main_panes)
+        main_panes.add(left_panel, minsize=520)
+        main_panes.add(right_panel, minsize=360)
+
         # 1) Fichier source
-        frame1 = tk.LabelFrame(self, text="1) Fichier source")
+        frame1 = tk.LabelFrame(left_panel, text="1) Fichier source")
         frame1.pack(fill="x", **pad)
         self.src_var = tk.StringVar(value="Aucun fichier sélectionné")
         tk.Label(frame1, textvariable=self.src_var, anchor="w").pack(fill="x", padx=10, pady=5)
@@ -581,7 +589,7 @@ class App(tk.Tk):
         ).pack(anchor="w", padx=10, pady=5)
 
         # 2) Sections du document
-        frame2 = tk.LabelFrame(self, text="2) Sections du document")
+        frame2 = tk.LabelFrame(left_panel, text="2) Sections du document")
         frame2.pack(fill="both", expand=False, **pad)
         btns2 = tk.Frame(frame2)
         btns2.pack(anchor="w", padx=10, pady=5)
@@ -597,7 +605,7 @@ class App(tk.Tk):
         self.sections_canvas.create_window((0, 0), window=self.sections_frame, anchor="nw")
 
         # 3) Mode de relecture
-        frame3 = tk.LabelFrame(self, text="3) Mode de relecture")
+        frame3 = tk.LabelFrame(left_panel, text="3) Mode de relecture")
         frame3.pack(fill="x", **pad)
         self.mode_buttons = {}
         btnrow = tk.Frame(frame3)
@@ -608,7 +616,7 @@ class App(tk.Tk):
             self.mode_buttons[key] = b
 
         # 4) Dossier de sortie
-        frame4 = tk.LabelFrame(self, text="4) Dossier de sortie")
+        frame4 = tk.LabelFrame(left_panel, text="4) Dossier de sortie")
         frame4.pack(fill="x", **pad)
         self.out_var = tk.StringVar(value=self.output_dir)
         tk.Label(frame4, textvariable=self.out_var, anchor="w").pack(fill="x", padx=10, pady=5)
@@ -630,6 +638,29 @@ class App(tk.Tk):
         self.prompt_txt = tk.Text(frame5, height=10, wrap="word")
         self.prompt_txt.configure(state="disabled")
         self.prompt_txt.pack(fill="both", expand=True, padx=10, pady=5)
+
+        # Recomposer la zone "5) Lancer l'analyse" dans le panneau gauche
+        try:
+            frame5.destroy()
+        except Exception:
+            pass
+
+        frame5 = tk.LabelFrame(left_panel, text="5) Lancer l'analyse")
+        frame5.pack(fill="both", expand=True, **pad)
+        tk.Button(frame5, text="Lancer l'analyse", command=self.launch_analysis).pack(anchor="w", padx=10, pady=5)
+
+        tk.Label(frame5, text="Journal d'exécution").pack(anchor="w", padx=10)
+        self.log_txt = tk.Text(frame5, height=10, wrap="word", state="disabled")
+        self.log_txt.pack(fill="both", expand=True, padx=10, pady=5)
+
+        # Panneau de droite: prompt opérationnel
+        pr_frame = tk.LabelFrame(right_panel, text="Prompt opérationnel (audit)")
+        pr_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        self.prompt_txt = tk.Text(pr_frame, wrap="word")
+        sb = ttk.Scrollbar(pr_frame, orient="vertical", command=self.prompt_txt.yview)
+        self.prompt_txt.configure(yscrollcommand=sb.set, state="disabled")
+        self.prompt_txt.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=8)
+        sb.pack(side="right", fill="y", padx=(0, 8), pady=8)
 
     # Actions
     def choose_source(self):

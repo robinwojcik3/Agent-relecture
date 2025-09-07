@@ -1,0 +1,40 @@
+
+    # Actions
+    def choose_source(self):
+        path = filedialog.askopenfilename(filetypes=[("Documents Word", "*.docx")])
+        if not path:
+            return
+        self.source_path = os.path.abspath(path)
+        self.src_var.set(self.source_path)
+        try:
+            self.copy_relpath = self._copy_to_input(self.source_path)
+            self.log(f"Copie créée: {self.copy_relpath}")
+        except Exception as e:
+            messagebox.showerror("Erreur de copie", str(e))
+            self.copy_relpath = None
+
+    def open_source_folder(self):
+        path = self.source_path
+        if not path:
+            messagebox.showinfo("Info", "Aucun fichier sélectionné.")
+            return
+        folder = os.path.dirname(path)
+        try:
+            os.startfile(folder)
+        except Exception as e:
+            messagebox.showerror("Erreur", str(e))
+
+    def set_mode(self, key):
+        self.mode = key
+        for k, b in self.mode_buttons.items():
+            if k == key:
+                b.configure(bg="#2e86de", fg="white", activebackground="#1e5aa6")
+            else:
+                b.configure(bg=self.cget("bg"), fg="black", activebackground=self.cget("bg"))
+
+    def choose_output_dir(self):
+        d = filedialog.askdirectory()
+        if not d:
+            return
+        self.output_dir = os.path.abspath(d)
+        os.makedirs(self.output_dir, exist_ok=True)

@@ -1,0 +1,60 @@
+        frame5 = tk.LabelFrame(self, text="5) Lancer l’analyse")
+        frame5.pack(fill="both", expand=True, **pad)
+        tk.Button(frame5, text="Lancer l’analyse", command=self.launch_analysis).pack(anchor="w", padx=10, pady=5)
+
+        tk.Label(frame5, text="Journal d’exécution").pack(anchor="w", padx=10)
+        self.log_txt = tk.Text(frame5, height=10, wrap="word", state="disabled")
+        self.log_txt.pack(fill="both", expand=True, padx=10, pady=5)
+
+        tk.Label(frame5, text="Prompt opérationnel (audit)").pack(anchor="w", padx=10)
+        self.prompt_txt = tk.Text(frame5, height=10, wrap="word")
+        self.prompt_txt.configure(state="disabled")
+        self.prompt_txt.pack(fill="both", expand=True, padx=10, pady=5)
+
+    # Actions
+    def choose_source(self):
+        path = filedialog.askopenfilename(filetypes=[("Documents Word", "*.docx")])
+        if not path:
+            return
+        self.source_path = os.path.abspath(path)
+        self.src_var.set(self.source_path)
+        try:
+            self.copy_relpath = self._copy_to_input(self.source_path)
+            self.log(f"Copie créée: {self.copy_relpath}")
+        except Exception as e:
+            messagebox.showerror("Erreur de copie", str(e))
+            self.copy_relpath = None
+
+    def open_source_folder(self):
+        path = self.source_path
+        if not path:
+            messagebox.showinfo("Info", "Aucun fichier sélectionné.")
+            return
+        folder = os.path.dirname(path)
+        try:
+            os.startfile(folder)
+        except Exception as e:
+            messagebox.showerror("Erreur", str(e))
+
+    def set_mode(self, key):
+        self.mode = key
+        for k, b in self.mode_buttons.items():
+            if k == key:
+                b.configure(bg="#2e86de", fg="white", activebackground="#1e5aa6")
+            else:
+                b.configure(bg=self.cget("bg"), fg="black", activebackground=self.cget("bg"))
+
+    def choose_output_dir(self):
+        d = filedialog.askdirectory()
+        if not d:
+            return
+        self.output_dir = os.path.abspath(d)
+        os.makedirs(self.output_dir, exist_ok=True)
+        self.out_var.set(self.output_dir)
+
+    def open_output_dir(self):
+        d = self.output_dir or OUTPUT_DIR
+        os.makedirs(d, exist_ok=True)
+        try:
+            os.startfile(d)
+        except Exception as e:
