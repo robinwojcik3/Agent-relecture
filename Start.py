@@ -605,5 +605,58 @@ def _launch_prep_only(self):
 App.launch_prep_only = _launch_prep_only
 App.launch_analysis = _launch_prep_only
 
+# Nouveau gabarit de prompt conforme à la directive
+def _build_prompt_preview(self, rel_docx: str, selected_labels: list, mode: str) -> str:
+    try:
+        sections_str = ", ".join(selected_labels) if selected_labels else "document entier"
+        chemin_decoupee = rel_docx
+        chemin_original = self.source_path or "(non disponible)"
+        chemin_non_decoupee = (self.copy_relpath or "(non disponible)").replace("\\", "/")
+        chemin_checklist = f"modes/{mode}/instructions/checklist.md"
+        chemin_refs = f"modes/{mode}/refs"
+        dossier_sortie = self.output_dir
+        base_src = os.path.splitext(os.path.basename(self.source_path or rel_docx))[0]
+        nom_basique = base_src.rstrip(" _-.")[:80]
+        mode_nom = mode
+    except Exception:
+        # En cas de souci de contexte, fournir un prompt minimal viable
+        return f"Document découpé: {rel_docx}\nMode: {mode}"
+
+    return (f"Contexte. Tu dois réaliser une relecture experte du document de travail indiqué ci-dessous. "
+            f"Le fichier original ne doit jamais être ouvert ni modifié. Toute l’analyse doit strictement porter "
+            f"sur la copie dédiée préparée pour toi.\n\n"
+
+            f"Document à analyser. Le document de travail est la COPIE DÉCOUPÉE suivante : {chemin_decoupee}. "
+            f"Ce chemin doit être utilisé tel quel. Vérifie dès le début que tu lis bien ce fichier et aucun autre. "
+            f"Toute référence au fichier original {chemin_original} est proscrite pour la relecture. "
+            f"L’analyse doit couvrir l’intégralité du contenu de cette copie découpée, qui ne contient que les sections "
+            f"sélectionnées par l’utilisateur.\n\n"
+
+            f"Choix de modalité. Deux modalités existent. La modalité par défaut et recommandée consiste à travailler sur "
+            f"la COPIE DÉCOUPÉE {chemin_decoupee} et à relire l’intégralité de cette copie. C’est cette modalité que tu dois "
+            f"appliquer ici. À titre exceptionnel seulement, si aucune découpe n’a été effectuée, la relecture se ferait alors sur "
+            f"une COPIE NON DÉCOUPÉE {chemin_non_decoupee} avec une restriction explicite aux sections suivantes : {sections_str}. "
+            f"Ce n’est pas le cas présent : tu dois ignorer le fichier original et toute autre copie, et te concentrer exclusivement sur "
+            f"{chemin_decoupee}.\n\n"
+
+            f"Périmètre méthodologique. Le module de relecture à appliquer est : {mode_nom} (offre, diagnostic, impacts, ou mesures). "
+            f"Tu t’appuies sur la checklist correspondante située ici : {chemin_checklist}. Lorsque pertinent, tu peux consulter les documents "
+            f"de référence du mode dans : {chemin_refs}. Tu justifies chaque remarque par des éléments du texte, et tu maintiens une cohérence stricte "
+            f"avec la structure fournie par la copie découpée.\n\n"
+
+            f"Résultat attendu. Tu dois produire un unique livrable final au format Word contenant l’ensemble des révisions en suivi des modifications et l’ensemble des commentaires, "
+            f"enregistré dans le dossier de sortie suivant : {dossier_sortie}. Le nommage conseillé est : {nom_basique}_AI_suivi+commentaires.docx. "
+            f"Ce livrable doit être auto-suffisant pour une relecture humaine et une instruction administrative.\n\n"
+
+            f"Rappels de sécurité et de focalisation. Ne touche jamais au fichier original. Ne lance aucune opération en dehors du périmètre du fichier {chemin_decoupee}. "
+            f"Ne dévie pas vers d’autres sections que celles contenues dans cette copie. Si un écart de périmètre est détecté, suspends l’analyse et demande une clarification, "
+            f"mais n’emploie jamais {chemin_original} comme base de travail.\n\n"
+
+            f"Validation initiale. Avant de commencer, confirme explicitement dans ta réponse le chemin exact du fichier de travail utilisé : {chemin_decoupee}. "
+            f"Toute la suite de la relecture doit s’y référer.")
+
+# Remplace la méthode de génération de prompt par le nouveau gabarit
+App.build_prompt_preview = _build_prompt_preview
+
 if __name__ == "__main__":
     App().mainloop()
