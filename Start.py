@@ -4,15 +4,30 @@ import sys
 import json
 import csv
 import shutil
-import subprocess
 from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
+# Tenter d'importer les dépendances et guider l'utilisateur si elles sont manquantes.
 try:
     from docx import Document
-except Exception:
-    Document = None
+except ImportError:
+    # Ce bloc ne devrait être atteint que si l'utilisateur exécute le script directement
+    # sans passer par les scripts de lancement (start.bat/start.sh).
+    # On affiche une erreur claire et on quitte.
+    root = tk.Tk()
+    root.withdraw() # Cacher la fenêtre principale de tkinter
+    messagebox.showerror(
+        "Dépendance Manquante",
+        "La bibliothèque 'python-docx' n'est pas installée.\n\n"
+        "Veuillez fermer cette fenêtre et exécuter le script 'start.bat' (ou 'start.sh') "
+        "pour installer automatiquement les dépendances."
+    )
+    sys.exit(1)
+
+# Importer les nouveaux outils Python locaux
+from tools.python_tools import add_comments_to_docx
+
 
 MODES = [
     ("offre", "Offre"),
@@ -33,57 +48,48 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # ------------------------- utilitaires -------------------------
 
-
 def ts_now():
     return datetime.now().strftime("%Y%m%d_%H%M%S")
-
 
 def norm_style_name(name: str) -> str:
     if not name:
         return ""
     return name.strip().lower()
 
-
 def detect_head_level(style_name: str):
     n = norm_style_name(style_name)
-    # Support FR/EN: "Titre 1/2/3" or "Heading 1/2/3"
     for prefix in ("heading ", "titre "):
         if n.startswith(prefix):
             try:
                 return int(n.split(prefix, 1)[1].split()[0])
-            except Exception:
+            except (ValueError, IndexError):
                 return None
     return None
-
 
 class Section:
     def __init__(self, title: str, level: int, start_index: int):
         self.title = title.strip()
         self.level = level
-        self.start_index = start_index  # index of paragraph in doc.paragraphs
-        self.end_index = None  # to be set after pass
-        self.number = None  # computed like 1., 2.1, etc.
+        self.start_index = start_index
+        self.end_index = None
+        self.number = None
 
     def label(self) -> str:
         num = (self.number or "?")
         return f"{num} {self.title}".strip()
 
-
 def analyze_sections(docx_path: str):
-    if Document is None:
-        raise RuntimeError("python-docx manquant. Cliquez sur ‘Installer dépendances…’ ou installez: pip install python-docx lxml")
     doc = Document(docx_path)
     secs = []
     for i, p in enumerate(doc.paragraphs):
-        lvl = detect_head_level(getattr(p.style, "name", ""))
+        style_name = getattr(p.style, "name", "")
+        lvl = detect_head_level(style_name)
         if lvl is not None and lvl >= 1:
             txt = p.text.strip()
             if txt:
                 secs.append(Section(txt, lvl, i))
-    # determine end_index by next section start
     for idx, s in enumerate(secs):
         s.end_index = (secs[idx + 1].start_index if idx + 1 < len(secs) else len(doc.paragraphs))
-    # compute numbering by counters
     counters = {}
     for s in secs:
         for k in list(counters.keys()):
@@ -94,60 +100,53 @@ def analyze_sections(docx_path: str):
         s.number = ".".join(parts)
     return secs
 
-
 def filter_paragraphs_by_sections(docx_path: str, chosen: list, sections: list) -> str:
-    """
-    Build a new DOCX with only the paragraphs belonging to selected sections.
-    chosen: indices into `sections` list.
-    Returns path to new docx.
-    """
     doc = Document(docx_path)
-    new = Document()
-    included_ranges = []
-    chosen_set = set(chosen)
-    # Expand: if a parent is chosen, include all its content until next section
-    for i, s in enumerate(sections):
-        if i in chosen_set:
-            start = s.start_index
-            end = s.end_index
-            included_ranges.append((start, end))
-    if not included_ranges:
-        included_ranges = [(0, len(doc.paragraphs))]
-
-    def add_paragraph_like(p_src):
-        text = p_src.text
-        if not text and not p_src.runs:
-            new.add_paragraph("")
-            return
-        p = new.add_paragraph()
-        try:
-            p.style = p_src.style
-        except Exception:
-            pass
-        for r in p_src.runs:
-            nr = p.add_run(r.text)
+    new_doc = Document()
+    # Transférer les styles pour conserver la mise en forme
+    for style in doc.styles:
+        if style.type:
             try:
-                nr.bold = r.bold
-                nr.italic = r.italic
-                nr.underline = r.underline
+                new_doc.styles.add_style(style.name, style.type)
             except Exception:
                 pass
 
-    for (a, b) in included_ranges:
-        for i in range(a, b):
-            add_paragraph_like(doc.paragraphs[i])
+    included_ranges = []
+    chosen_set = set(chosen)
+    for i, s in enumerate(sections):
+        if i in chosen_set:
+            included_ranges.append((s.start_index, s.end_index))
+    if not included_ranges:
+        included_ranges = [(0, len(doc.paragraphs))]
+
+    for start, end in included_ranges:
+        for i in range(start, end):
+            p_src = doc.paragraphs[i]
+            p_dest = new_doc.add_paragraph()
+            for r_src in p_src.runs:
+                r_dest = p_dest.add_run(r_src.text)
+                r_dest.bold = r_src.bold
+                r_dest.italic = r_src.italic
+                r_dest.underline = r_src.underline
+                if r_src.font.name: r_dest.font.name = r_src.font.name
+                if r_src.font.size: r_dest.font.size = r_src.font.size
+            if p_src.style.name:
+                try:
+                    p_dest.style = p_src.style.name
+                except Exception:
+                    pass
 
     base = os.path.splitext(os.path.basename(docx_path))[0]
-    out = os.path.join(WORK_DIR, f"{base}_SECTIONS_{ts_now()}.docx")
-    new.save(out)
-    return out
-
+    out_path = os.path.join(WORK_DIR, f"{base}_SECTIONS_{ts_now()}.docx")
+    new_doc.save(out_path)
+    return out_path
 
 def docx_to_markdown(docx_path: str) -> str:
     doc = Document(docx_path)
     lines = []
     for p in doc.paragraphs:
-        lvl = detect_head_level(getattr(p.style, "name", ""))
+        style_name = getattr(p.style, "name", "")
+        lvl = detect_head_level(style_name)
         t = (p.text or "").strip()
         if not t:
             lines.append("")
@@ -158,19 +157,16 @@ def docx_to_markdown(docx_path: str) -> str:
             lines.append(t)
     return "\n".join(lines) + "\n"
 
-
 def sanitize_text(s: str) -> str:
     import re
     s = s.replace("\u00A0", " ")
     s = re.sub(r"\s+", " ", s)
     s = re.sub(r"\s+([,;:!?])", r"\1", s)
     s = re.sub(r"\(\s+", "(", s)
-    s = re.sub(r"\s+\)", ")", s)
+    s = re.sub(r"\s+\", ")", s)
     return s.strip()
 
-
 ALLOWED_CATEGORIES = ["coherence", "methodologie", "reglementaire", "carto", "redaction"]
-
 
 def load_checklist(mode: str):
     path = os.path.join(ROOT, "modes", mode, "instructions", "checklist.md")
@@ -181,41 +177,27 @@ def load_checklist(mode: str):
     except Exception:
         return []
 
-
 def classify_comment_from_text(txt: str, mode: str):
     t = txt.lower()
-    if any(k in t for k in ["méthod", "methodo", "protocole", "phases", "jalon"]):
-        return ("P2", "methodologie")
-    if any(k in t for k in ["réglement", "natura 2000", "code", "loi", "eau"]):
-        return ("P2", "reglementaire")
-    if any(k in t for k in ["carte", "carto", "figure", "légende"]):
-        return ("P3", "carto")
-    if any(k in t for k in ["cohér", "coherence", "cohérence"]):
-        return ("P2", "coherence")
+    if any(k in t for k in ["méthod", "methodo", "protocole"]): return ("P2", "methodologie")
+    if any(k in t for k in ["réglement", "natura 2000", "loi"]): return ("P2", "reglementaire")
+    if any(k in t for k in ["carte", "carto", "figure", "légende"]): return ("P3", "carto")
+    if any(k in t for k in ["cohér", "cohérence"]): return ("P2", "coherence")
     return ("P3", "redaction")
 
-
 def generate_review(md_in: str, mode: str):
-    """
-    Returns revised_md, comments rows.
-    comments rows: list of dict with keys ancre_textuelle, commentaire, gravite, categorie
-    """
     import re
     lines = md_in.splitlines()
     revised_lines = []
     comments = []
     checklist = load_checklist(mode)
-
     used_anchors = {}
 
     def anchor_for(text: str) -> str:
-        base = sanitize_text(text)[:20]
-        base = re.sub(r"[^A-Za-z0-9À-ÿ\-\s]", "", base)
-        base = re.sub(r"\s+", " ", base).strip()
-        if not base:
-            base = "ancre"
-        k = base
-        i = 1
+        base = sanitize_text(text)[:25]
+        base = re.sub(r"[^A-Za-z0-9À-ÿ\-\s]", "", base).strip()
+        if not base: base = "ancre"
+        k, i = base, 1
         while k.lower() in used_anchors:
             i += 1
             k = f"{base} {i}"
@@ -223,24 +205,17 @@ def generate_review(md_in: str, mode: str):
         return k
 
     full_text = "\n".join(lines).lower()
-    # Find first heading text to anchor generic comments if any
-    first_heading_text = None
-    for ln_h in lines:
-        if ln_h.startswith("#"):
-            first_heading_text = sanitize_text(ln_h.lstrip("#").strip())
-            break
+    first_heading_text = next((sanitize_text(ln.lstrip("#").strip()) for ln in lines if ln.startswith("#")), None)
+
     for item in checklist:
         key = item.split(":")[0]
         if key and key.lower() not in full_text:
             grav, cat = classify_comment_from_text(item, mode)
-            comments.append(
-                {
-                    "ancre_textuelle": (first_heading_text or "Introduction"),
-                    "commentaire": f"Vérifier couverture de la checklist: '{item}'.",
-                    "gravite": grav,
-                    "categorie": cat,
-                }
-            )
+            comments.append({
+                "ancre_textuelle": (first_heading_text or "Introduction"),
+                "commentaire": f"Vérifier couverture de la checklist: '{item}'.",
+                "gravite": grav, "categorie": cat,
+            })
 
     for ln in lines:
         raw = ln.rstrip()
@@ -257,174 +232,47 @@ def generate_review(md_in: str, mode: str):
 
         txt_low = cleaned.lower()
         make_comment = None
-        if len(cleaned) > 600:
-            make_comment = ("P3", "redaction", "Paragraphe très long: envisager de le scinder pour la lisibilité.")
-        if any(x in txt_low for x in ["tbd", "???", "à définir", "a definir", "xxx"]):
-            make_comment = ("P1", "coherence", "Marqueur d'incertain repéré (TBD/??/à définir): préciser ou retirer.")
-        if ("carte" in txt_low or "figure" in txt_low) and not re.search(r"\b(\d+)\b", cleaned):
-            make_comment = ("P3", "carto", "Référence à une carte/figure sans identifiant: ajouter le numéro.")
+        if len(cleaned) > 600: make_comment = ("P3", "redaction", "Paragraphe très long: envisager de le scinder.")
+        if any(x in txt_low for x in ["tbd", "???", "à définir"]): make_comment = ("P1", "coherence", "Marqueur d\'incertain repéré: préciser/retirer.")
+        if ("carte" in txt_low or "figure" in txt_low) and not re.search(r"\d", cleaned): make_comment = ("P3", "carto", "Référence à une carte/figure sans numéro.")
 
         if make_comment:
             grav, cat, note = make_comment
-            if cat not in ALLOWED_CATEGORIES:
-                cat = "redaction"
-            comments.append(
-                {
-                    "ancre_textuelle": anchor_for(cleaned[:80]),
-                    "commentaire": note,
-                    "gravite": grav,
-                    "categorie": cat,
-                }
-            )
+            comments.append({
+                "ancre_textuelle": anchor_for(cleaned), "commentaire": note,
+                "gravite": grav, "categorie": cat if cat in ALLOWED_CATEGORIES else "redaction",
+            })
 
-    revised_md = "\n".join(revised_lines) + "\n"
-    return revised_md, comments
+    return "\n".join(revised_lines) + "\n", comments
 
-
-def markdown_to_docx(md_text: str, out_path: str):
+def markdown_to_docx(md_text: str, out_path: str, reference_docx: Document):
     doc = Document()
+    for style in reference_docx.styles: # Conserver les styles
+        if style.type: 
+            try: doc.styles.add_style(style.name, style.type)
+            except: pass
+
     for raw in md_text.splitlines():
         if not raw.strip():
             doc.add_paragraph("")
             continue
         if raw.startswith("#"):
             level = len(raw) - len(raw.lstrip("#"))
-            title = raw[level:].strip()
-            p = doc.add_paragraph(title)
-            try:
-                p.style = f"Heading {min(level,6)}"
-            except Exception:
-                pass
-        elif raw.startswith("- "):
-            doc.add_paragraph(raw[2:])
+            p = doc.add_paragraph(raw[level:].strip())
+            try: p.style = f"Heading {min(level,6)}"
+            except: pass
         else:
             doc.add_paragraph(raw)
     doc.save(out_path)
 
-
 def write_comments_csv(rows, path: str):
     fieldnames = ["ancre_textuelle", "commentaire", "gravite", "categorie"]
-    norm_rows = []
-    for r in rows:
-        rr = {k: str(r.get(k, "")) for k in fieldnames}
-        if rr["gravite"] not in ("P1", "P2", "P3"):
-            rr["gravite"] = "P3"
-        if rr["categorie"] not in ALLOWED_CATEGORIES:
-            rr["categorie"] = "redaction"
-        if rr["ancre_textuelle"]:
-            norm_rows.append(rr)
     with open(path, "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
-        for r in norm_rows:
-            w.writerow(r)
-
-
-def run_compare_and_comment(original_docx: str, revised_docx: str, comments_csv: str, output_docx: str):
-    """Run the PowerShell compare script and surface detailed errors.
-
-    Uses -NoProfile and captures stdout/stderr so that any failure inside
-    PowerShell/Word is clearly shown to the user instead of only the exit code.
-    Also normalizes paths to avoid issues with spaces, accents and '&'.
-    """
-    ps1 = os.path.join(os.path.dirname(__file__), "tools/compare_and_comment.ps1")
-    if not os.path.exists(ps1):
-        raise RuntimeError("Le fichier tools/compare_and_comment.ps1 est manquant")
-
-    # Ensure output directory exists
-    os.makedirs(os.path.dirname(output_docx), exist_ok=True)
-
-    # Normalize to absolute paths
-    ps1 = os.path.normpath(os.path.abspath(ps1))
-    original_docx = os.path.normpath(os.path.abspath(original_docx))
-    revised_docx = os.path.normpath(os.path.abspath(revised_docx))
-    comments_csv = os.path.normpath(os.path.abspath(comments_csv))
-    output_docx = os.path.normpath(os.path.abspath(output_docx))
-
-    # Quick sanity checks for clearer error messages
-    for p, label in [
-        (original_docx, "Document original"),
-        (revised_docx, "Document révisé"),
-        (comments_csv, "Fichier CSV des commentaires"),
-    ]:
-        if not os.path.exists(p):
-            raise RuntimeError(f"Fichier introuvable pour {label}: {p}")
-
-    # Create a temporary file for PowerShell output
-    import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.log') as tmp:
-        log_file = tmp.name
-
-    try:
-        # Build the PowerShell command with proper encoding
-        cmd = [
-            'powershell.exe',
-            '-NoProfile',
-            '-ExecutionPolicy', 'Bypass',
-            '-NoLogo',
-            '-NonInteractive',
-            '-Command',
-            f'$ErrorActionPreference = "Stop"; ' \
-            f'$OutputEncoding = [System.Text.Encoding]::UTF8; ' \
-            f'try {{ ' \
-            f'    & "{ps1}" -OriginalDocx "{original_docx}" -RevisedDocx "{revised_docx}" -CommentsCsv "{comments_csv}" -OutputDocx "{output_docx}" 2>&1 | ' \
-            f'    Tee-Object -FilePath "{log_file}" -Encoding UTF8 ' \
-            f'}} catch {{ ' \
-            f'    [System.Console]::Error.WriteLine($_.Exception.Message); ' \
-            f'    exit 1 ' \
-            f'}}'
-        ]
-        
-        # Run the command with proper encoding
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-            encoding='utf-8',
-            errors='replace'
-        )
-        
-        # Read output in real-time
-        stdout, stderr = process.communicate()
-        
-        # Check for errors
-        if process.returncode != 0:
-            # Read the log file for detailed error
-            try:
-                with open(log_file, 'r', encoding='utf-8', errors='replace') as f:
-                    log_content = f.read()
-                error_msg = f"Erreur lors de la comparaison des documents Word.\n\nDétails :\n{log_content}"
-            except Exception as e:
-                error_msg = f"Erreur lors de la lecture du journal d'erreur : {str(e)}"
-                
-            if not error_msg.strip():
-                error_msg = "Erreur inconnue lors de la comparaison des documents Word."
-                
-            raise RuntimeError(error_msg)
-            
-    except subprocess.CalledProcessError as e:
-        # Read the log file for detailed error
-        try:
-            with open(log_file, 'r', encoding='utf-8', errors='replace') as f:
-                log_content = f.read()
-            error_msg = f"Erreur lors de l'exécution de PowerShell :\n{log_content}"
-        except Exception as e:
-            error_msg = f"Erreur lors de la lecture du journal d'erreur : {str(e)}"
-        
-        raise RuntimeError(error_msg) from e
-        
-    except Exception as e:
-        raise RuntimeError(f"Erreur inattendue : {str(e)}") from e
-        
-    finally:
-        # Clean up the temporary log file
-        try:
-            if os.path.exists(log_file):
-                os.unlink(log_file)
-        except Exception:
-            pass
-
+        for r in rows:
+            if r.get("ancre_textuelle"):
+                w.writerow({k: str(r.get(k, "")) for k in fieldnames})
 
 # ---------------------- Fenêtre de sélection ----------------------
 
@@ -433,538 +281,211 @@ class SectionsDialog(tk.Toplevel):
         super().__init__(master)
         self.title("Sélection des sections")
         self.geometry("560x420")
-        self.resizable(True, True)
-        self.sections = sections
-        self.result = None
-        self.selected = set(preselected_idx or [])
-
-        frm = tk.Frame(self)
-        frm.pack(fill="both", expand=True, padx=10, pady=10)
-
-        # Listbox multisélection (EXTENDED => Shift pour plage, Ctrl pour ajout)
+        self.sections, self.result = sections, None
+        frm = tk.Frame(self); frm.pack(fill="both", expand=True, padx=10, pady=10)
         self.lb = tk.Listbox(frm, selectmode=tk.EXTENDED, activestyle="none")
         sb = ttk.Scrollbar(frm, orient="vertical", command=self.lb.yview)
-        self.lb.configure(yscrollcommand=sb.set)
-        self.lb.pack(side="left", fill="both", expand=True)
-        sb.pack(side="right", fill="y")
-
-        # Remplir
+        self.lb.config(yscrollcommand=sb.set); self.lb.pack(side="left", fill="both", expand=True); sb.pack(side="right", fill="y")
         for i, s in enumerate(sections):
-            indent = "    " * (max(0, s.level - 1))
-            self.lb.insert(tk.END, f"{indent}{s.label()}")
-            if i in self.selected:
-                self.lb.selection_set(i)
-        # Click sans modificateur => sélectionner le bloc (section + descendants)
+            self.lb.insert(tk.END, f"{ '    ' * max(0, s.level - 1)}{s.label()}")
+            if i in (preselected_idx or []): self.lb.selection_set(i)
         self.lb.bind("<ButtonRelease-1>", self.on_click_block)
-
-        # Actions
-        btns = tk.Frame(self)
-        btns.pack(fill="x", padx=10, pady=(0, 10))
+        btns = tk.Frame(self); btns.pack(fill="x", padx=10, pady=(0, 10))
         tk.Button(btns, text="Tout cocher", command=self.sel_all).pack(side="left")
         tk.Button(btns, text="Tout décocher", command=self.sel_none).pack(side="left", padx=6)
         tk.Button(btns, text="Valider", command=self.on_ok).pack(side="right")
         tk.Button(btns, text="Annuler", command=self.on_cancel).pack(side="right", padx=6)
+        self.bind("<Return>", lambda e: self.on_ok()); self.bind("<Escape>", lambda e: self.on_cancel())
+        self.transient(master); self.grab_set(); self.lb.focus_set()
 
-        self.bind("<Return>", lambda e: self.on_ok())
-        self.bind("<Escape>", lambda e: self.on_cancel())
-        self.transient(master)
-        self.grab_set()
-        self.lb.focus_set()
-
-    def sel_all(self):
-        self.lb.select_set(0, tk.END)
-
-    def sel_none(self):
-        self.lb.select_clear(0, tk.END)
-
-    def on_ok(self):
-        self.result = list(self.lb.curselection())
-        self.destroy()
-
-    def on_cancel(self):
-        self.result = None
-        self.destroy()
-
+    def sel_all(self): self.lb.select_set(0, tk.END)
+    def sel_none(self): self.lb.select_clear(0, tk.END)
+    def on_ok(self): self.result = list(self.lb.curselection()); self.destroy()
+    def on_cancel(self): self.result = None; self.destroy()
     def on_click_block(self, event):
-        # Respecter Shift/Ctrl (sélection étendue native)
-        shift = (event.state & 0x0001) != 0
-        ctrl = (event.state & 0x0004) != 0
-        if shift or ctrl:
-            return
+        if (event.state & 0x0001) or (event.state & 0x0004): return
         idx = self.lb.nearest(event.y)
-        if idx < 0:
-            return
-        # Déterminer le bloc [idx .. endDesc]
-        cur_level = self.sections[idx].level
+        if idx < 0: return
         end = idx + 1
-        while end < len(self.sections) and self.sections[end].level > cur_level:
-            end += 1
+        while end < len(self.sections) and self.sections[end].level > self.sections[idx].level: end += 1
         block = range(idx, end)
-        # Toggle du bloc (si tout déjà sélectionné -> on désélectionne)
-        sel = set(self.lb.curselection())
-        if all(i in sel for i in block):
-            for i in block:
-                self.lb.selection_clear(i)
-        else:
-            # Remplacer par défaut (comportement simple et prévisible)
-            self.lb.selection_clear(0, tk.END)
-            for i in block:
-                self.lb.selection_set(i)
-
+        if all(i in set(self.lb.curselection()) for i in block): [self.lb.selection_clear(i) for i in block]
+        else: self.lb.select_clear(0, tk.END); [self.lb.selection_set(i) for i in block]
 
 # ------------------------- GUI -------------------------
-
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Relecture IA — Assistant graphique")
         self.geometry("1000x760")
-        self.resizable(True, True)
-
-        self.source_path = None  # chemin vers le fichier source original
-        self.copy_relpath = None  # chemin relatif vers la copie dans input/
-        self.output_dir = OUTPUT_DIR  # dossier de sortie choisi
-        self.mode = None  # 'offre'|'diagnostic'|'impacts'|'mesures'
-
-        self.sections = []  # list[Section]
-        self.section_vars = []  # list[tk.BooleanVar]
-
+        self.source_path, self.copy_relpath, self.mode = None, None, None
+        self.output_dir = OUTPUT_DIR
+        self.sections, self.section_vars = [], []
         self._build_ui()
 
-    # --- deps ---
-    def ensure_docx(self) -> bool:
-        global Document
-        if Document is not None:
-            return True
-        try:
-            import importlib
-            Document = importlib.import_module('docx').Document
-            return True
-        except Exception:
-            pass
-        # Try on-the-fly install
-        try:
-            self.log("Installation de python-docx (et lxml)…")
-            subprocess.run([sys.executable, "-m", "pip", "install", "python-docx", "lxml"], check=True)
-            import importlib
-            Document = importlib.import_module('docx').Document
-            self.log("python-docx installé avec succès.")
-            return True
-        except Exception as e:
-            self.log(f"Échec installation python-docx: {e}")
-            return False
-
     def log(self, msg: str):
-        self.log_txt.configure(state="normal")
+        self.log_txt.config(state="normal")
         self.log_txt.insert(tk.END, f"{datetime.now().strftime('%H:%M:%S')} — {msg}\n")
-        self.log_txt.see(tk.END)
-        self.log_txt.configure(state="disabled")
-        self.update_idletasks()
+        self.log_txt.see(tk.END); self.log_txt.config(state="disabled"); self.update_idletasks()
 
     def _build_ui(self):
         pad = {"padx": 10, "pady": 8}
+        panes = tk.PanedWindow(self, orient=tk.HORIZONTAL); panes.pack(fill="both", expand=True)
+        left = tk.Frame(panes); right = tk.Frame(panes)
+        panes.add(left, minsize=520); panes.add(right, minsize=360)
 
-        # Deux colonnes: gauche (actions) / droite (prompt)
-        main_panes = tk.PanedWindow(self, orient=tk.HORIZONTAL)
-        main_panes.pack(fill="both", expand=True)
-        left_panel = tk.Frame(main_panes)
-        right_panel = tk.Frame(main_panes)
-        main_panes.add(left_panel, minsize=520)
-        main_panes.add(right_panel, minsize=360)
-
-        # 1) Fichier source
-        frame1 = tk.LabelFrame(left_panel, text="1) Fichier source")
-        frame1.pack(fill="x", **pad)
+        f1 = tk.LabelFrame(left, text="1) Fichier source"); f1.pack(fill="x", **pad)
         self.src_var = tk.StringVar(value="Aucun fichier sélectionné")
-        tk.Label(frame1, textvariable=self.src_var, anchor="w").pack(fill="x", padx=10, pady=5)
-        btns1 = tk.Frame(frame1)
-        btns1.pack(anchor="w", padx=10, pady=5)
-        tk.Button(btns1, text="Sélectionner le fichier Word…", command=self.choose_source).pack(side="left", padx=5)
-        tk.Button(btns1, text="Ouvrir le dossier", command=self.open_source_folder).pack(side="left", padx=5)
-        tk.Label(
-            frame1,
-            text="Le fichier original ne sera jamais modifié. Le traitement s’effectue sur une copie.",
-            fg="#555",
-        ).pack(anchor="w", padx=10, pady=5)
+        tk.Label(f1, textvariable=self.src_var, anchor="w").pack(fill="x", padx=10, pady=5)
+        b1 = tk.Frame(f1); b1.pack(anchor="w", padx=10, pady=5)
+        tk.Button(b1, text="Sélectionner le fichier Word…", command=self.choose_source).pack(side="left", padx=5)
+        tk.Button(b1, text="Ouvrir le dossier", command=self.open_source_folder).pack(side="left", padx=5)
+        tk.Label(f1, text="Le fichier original ne sera jamais modifié.", fg="#555").pack(anchor="w", padx=10, pady=5)
 
-        # 2) Sections du document
-        frame2 = tk.LabelFrame(left_panel, text="2) Sections du document")
-        frame2.pack(fill="both", expand=False, **pad)
-        btns2 = tk.Frame(frame2)
-        btns2.pack(anchor="w", padx=10, pady=5)
-        tk.Button(btns2, text="Afficher les sections", command=self.show_sections).pack(side="left", padx=5)
-        tk.Button(btns2, text="Installer dépendances…", command=self.install_deps).pack(side="left", padx=5)
+        f2 = tk.LabelFrame(left, text="2) Sections du document"); f2.pack(fill="x", **pad)
+        b2 = tk.Frame(f2); b2.pack(anchor="w", padx=10, pady=5)
+        tk.Button(b2, text="Afficher les sections", command=self.show_sections).pack(side="left", padx=5)
         self.sections_count_var = tk.StringVar(value="0 section sélectionnée")
-        tk.Label(btns2, textvariable=self.sections_count_var).pack(side="left", padx=10)
-
-        # Zone placeholder (reste vide; la sélection se fait dans une fenêtre dédiée scrollable)
-        self.sections_canvas = tk.Canvas(frame2, height=120)
-        self.sections_canvas.pack(fill="x", padx=10, pady=5)
+        tk.Label(b2, textvariable=self.sections_count_var).pack(side="left", padx=10)
+        self.sections_canvas = tk.Canvas(f2, height=100); self.sections_canvas.pack(fill="x", padx=10, pady=5)
         self.sections_frame = tk.Frame(self.sections_canvas)
         self.sections_canvas.create_window((0, 0), window=self.sections_frame, anchor="nw")
 
-        # 3) Mode de relecture
-        frame3 = tk.LabelFrame(left_panel, text="3) Mode de relecture")
-        frame3.pack(fill="x", **pad)
+        f3 = tk.LabelFrame(left, text="3) Mode de relecture"); f3.pack(fill="x", **pad)
         self.mode_buttons = {}
-        btnrow = tk.Frame(frame3)
-        btnrow.pack(anchor="w", padx=10, pady=5)
+        btnrow = tk.Frame(f3); btnrow.pack(anchor="w", padx=10, pady=5)
         for key, label in MODES:
             b = tk.Button(btnrow, text=label, width=20, command=lambda k=key: self.set_mode(k))
-            b.pack(side="left", padx=6, pady=3)
-            self.mode_buttons[key] = b
+            b.pack(side="left", padx=6, pady=3); self.mode_buttons[key] = b
 
-        # 4) Dossier de sortie
-        frame4 = tk.LabelFrame(left_panel, text="4) Dossier de sortie")
-        frame4.pack(fill="x", **pad)
+        f4 = tk.LabelFrame(left, text="4) Dossier de sortie"); f4.pack(fill="x", **pad)
         self.out_var = tk.StringVar(value=self.output_dir)
-        tk.Label(frame4, textvariable=self.out_var, anchor="w").pack(fill="x", padx=10, pady=5)
-        btns4 = tk.Frame(frame4)
-        btns4.pack(anchor="w", padx=10, pady=5)
-        tk.Button(btns4, text="Choisir le dossier de sortie…", command=self.choose_output_dir).pack(side="left", padx=5)
-        tk.Button(btns4, text="Ouvrir le dossier de sortie", command=self.open_output_dir).pack(side="left", padx=5)
+        tk.Label(f4, textvariable=self.out_var, anchor="w").pack(fill="x", padx=10, pady=5)
+        b4 = tk.Frame(f4); b4.pack(anchor="w", padx=10, pady=5)
+        tk.Button(b4, text="Choisir le dossier…", command=self.choose_output_dir).pack(side="left", padx=5)
+        tk.Button(b4, text="Ouvrir le dossier", command=self.open_output_dir).pack(side="left", padx=5)
 
-        # 5) Lancer l’analyse
-        frame5 = tk.LabelFrame(self, text="5) Lancer l’analyse")
-        frame5.pack(fill="both", expand=True, **pad)
-        tk.Button(frame5, text="Lancer l’analyse", command=self.launch_analysis).pack(anchor="w", padx=10, pady=5)
-
-        tk.Label(frame5, text="Journal d’exécution").pack(anchor="w", padx=10)
-        self.log_txt = tk.Text(frame5, height=10, wrap="word", state="disabled")
+        f5 = tk.LabelFrame(left, text="5) Lancer l’analyse"); f5.pack(fill="both", expand=True, **pad)
+        tk.Button(f5, text="Lancer l’analyse", command=self.launch_analysis).pack(anchor="w", padx=10, pady=5)
+        tk.Label(f5, text="Journal d’exécution").pack(anchor="w", padx=10)
+        self.log_txt = tk.Text(f5, height=10, wrap="word", state="disabled")
         self.log_txt.pack(fill="both", expand=True, padx=10, pady=5)
 
-        tk.Label(frame5, text="Prompt opérationnel (audit)").pack(anchor="w", padx=10)
-        self.prompt_txt = tk.Text(frame5, height=10, wrap="word")
-        self.prompt_txt.configure(state="disabled")
-        self.prompt_txt.pack(fill="both", expand=True, padx=10, pady=5)
-
-        # Recomposer la zone "5) Lancer l'analyse" dans le panneau gauche
-        try:
-            frame5.destroy()
-        except Exception:
-            pass
-
-        frame5 = tk.LabelFrame(left_panel, text="5) Lancer l'analyse")
-        frame5.pack(fill="both", expand=True, **pad)
-        tk.Button(frame5, text="Lancer l'analyse", command=self.launch_analysis).pack(anchor="w", padx=10, pady=5)
-
-        tk.Label(frame5, text="Journal d'exécution").pack(anchor="w", padx=10)
-        self.log_txt = tk.Text(frame5, height=10, wrap="word", state="disabled")
-        self.log_txt.pack(fill="both", expand=True, padx=10, pady=5)
-
-        # Panneau de droite: prompt opérationnel
-        pr_frame = tk.LabelFrame(right_panel, text="Prompt opérationnel (audit)")
-        pr_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        pr_frame = tk.LabelFrame(right, text="Prompt opérationnel (audit)"); pr_frame.pack(fill="both", expand=True, **pad)
         self.prompt_txt = tk.Text(pr_frame, wrap="word")
         sb = ttk.Scrollbar(pr_frame, orient="vertical", command=self.prompt_txt.yview)
-        self.prompt_txt.configure(yscrollcommand=sb.set, state="disabled")
-        self.prompt_txt.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=8)
-        sb.pack(side="right", fill="y", padx=(0, 8), pady=8)
+        self.prompt_txt.config(yscrollcommand=sb.set, state="disabled"); self.prompt_txt.pack(side="left", fill="both", expand=True); sb.pack(side="right", fill="y")
 
-    # Actions
     def choose_source(self):
         path = filedialog.askopenfilename(filetypes=[("Documents Word", "*.docx")])
-        if not path:
-            return
+        if not path: return
         self.source_path = os.path.abspath(path)
         self.src_var.set(self.source_path)
-        try:
-            self.copy_relpath = self._copy_to_input(self.source_path)
-            self.log(f"Copie créée: {self.copy_relpath}")
-        except Exception as e:
-            messagebox.showerror("Erreur de copie", str(e))
-            self.copy_relpath = None
+        try: self.copy_relpath = self._copy_to_input(self.source_path); self.log(f"Copie créée: {self.copy_relpath}")
+        except Exception as e: messagebox.showerror("Erreur", str(e)); self.copy_relpath = None
 
     def open_source_folder(self):
-        path = self.source_path
-        if not path:
-            messagebox.showinfo("Info", "Aucun fichier sélectionné.")
-            return
-        folder = os.path.dirname(path)
-        try:
-            os.startfile(folder)
-        except Exception as e:
-            messagebox.showerror("Erreur", str(e))
+        if not self.source_path: messagebox.showinfo("Info", "Aucun fichier."); return
+        try: os.startfile(os.path.dirname(self.source_path))
+        except Exception as e: messagebox.showerror("Erreur", str(e))
 
     def set_mode(self, key):
         self.mode = key
-        for k, b in self.mode_buttons.items():
-            if k == key:
-                b.configure(bg="#2e86de", fg="white", activebackground="#1e5aa6")
-            else:
-                b.configure(bg=self.cget("bg"), fg="black", activebackground=self.cget("bg"))
+        for k, b in self.mode_buttons.items(): b.config(bg=("#2e86de" if k == key else "SystemButtonFace"), fg=("white" if k == key else "SystemButtonText"))
 
     def choose_output_dir(self):
         d = filedialog.askdirectory()
-        if not d:
-            return
-        self.output_dir = os.path.abspath(d)
-        os.makedirs(self.output_dir, exist_ok=True)
-        self.out_var.set(self.output_dir)
+        if d: self.output_dir = os.path.abspath(d); os.makedirs(d, exist_ok=True); self.out_var.set(d)
 
     def open_output_dir(self):
-        d = self.output_dir or OUTPUT_DIR
-        os.makedirs(d, exist_ok=True)
-        try:
-            os.startfile(d)
-        except Exception as e:
-            messagebox.showerror("Erreur", str(e))
+        d = self.output_dir or OUTPUT_DIR; os.makedirs(d, exist_ok=True)
+        try: os.startfile(d)
+        except Exception as e: messagebox.showerror("Erreur", str(e))
 
     def _copy_to_input(self, src_path):
-        os.makedirs(INPUT_DIR, exist_ok=True)
-        base = os.path.basename(src_path)
-        name, ext = os.path.splitext(base)
-        candidate = os.path.join(INPUT_DIR, f"{name}_copie_{ts_now()}{ext}")
-        shutil.copy2(src_path, candidate)
-        rel = os.path.relpath(candidate, ROOT).replace("\\", "/")
-        return rel
-
-    def clear_sections_ui(self):
-        for w in list(self.sections_frame.children.values()):
-            w.destroy()
-        self.section_vars.clear()
-        self.sections_count_var.set("0 section sélectionnée")
+        name, ext = os.path.splitext(os.path.basename(src_path))
+        dest = os.path.join(INPUT_DIR, f"{name}_copie_{ts_now()}{ext}")
+        shutil.copy2(src_path, dest)
+        return os.path.relpath(dest, ROOT).replace("\", "/")
 
     def show_sections(self):
-        if not self.copy_relpath:
-            messagebox.showwarning("Manque fichier", "Sélectionnez d’abord un fichier Word.")
-            return
-        if not self.ensure_docx():
-            messagebox.showerror("Dépendances manquantes", "python-docx introuvable. Essayez ‘Installer dépendances…’ ou exécutez:\npython -m pip install python-docx lxml")
-            return
-        self.clear_sections_ui()
+        if not self.copy_relpath: messagebox.showwarning("Info", "Sélectionnez un fichier."); return
         try:
-            abs_path = os.path.join(ROOT, self.copy_relpath)
-            secs = analyze_sections(abs_path)
-            if not secs:
-                self.log("Aucune table des matières détectée. Bascule vers les styles de titres.")
-                secs = analyze_sections(abs_path)
-            self.sections = secs
-            # Ouvrir la fenêtre modale scrollable pour sélectionner
+            self.sections = analyze_sections(os.path.join(ROOT, self.copy_relpath))
             pre = [i for i, v in enumerate(self.section_vars) if v.get()] if self.section_vars else []
-            dlg = SectionsDialog(self, secs, pre)
+            dlg = SectionsDialog(self, self.sections, pre)
             self.wait_window(dlg)
             if dlg.result is not None:
-                # Recréer les vars selon résultat
-                self.section_vars = []
-                selected = set(dlg.result)
-                for i in range(len(secs)):
-                    self.section_vars.append(tk.BooleanVar(value=(i in selected)))
-                # Afficher un petit résumé (les 6 premiers labels) dans la zone placeholder
-                for w in list(self.sections_frame.children.values()):
-                    w.destroy()
-                summary = [secs[i].label() for i in sorted(selected)][:6]
+                self.section_vars = [tk.BooleanVar(value=(i in set(dlg.result))) for i in range(len(self.sections))]
+                for w in list(self.sections_frame.children.values()): w.destroy()
+                summary = [self.sections[i].label() for i in sorted(dlg.result)][:6]
                 if summary:
-                    for lab in summary:
-                        tk.Label(self.sections_frame, text=f"☑ {lab}", anchor="w").pack(anchor="w")
-                    if len(selected) > 6:
-                        tk.Label(self.sections_frame, text="…", anchor="w").pack(anchor="w")
-                else:
-                    tk.Label(self.sections_frame, text="(document entier)", anchor="w").pack(anchor="w")
+                    for lab in summary: tk.Label(self.sections_frame, text=f"☑ {lab}", anchor="w").pack(anchor="w")
+                    if len(dlg.result) > 6: tk.Label(self.sections_frame, text="…", anchor="w").pack(anchor="w")
+                else: tk.Label(self.sections_frame, text="(document entier)", anchor="w").pack(anchor="w")
             self.update_sections_count()
-        except Exception as e:
-            messagebox.showerror("Erreur", f"Impossible d’analyser les sections:\n{e}")
-
-    def install_deps(self):
-        ok = self.ensure_docx()
-        if ok:
-            messagebox.showinfo("OK", "Dépendances installées.")
-        else:
-            messagebox.showerror("Erreur", "Impossible d’installer python-docx automatiquement. Installez manuellement:\npython -m pip install python-docx lxml")
+        except Exception as e: messagebox.showerror("Erreur", f"Analyse des sections impossible:\n{e}")
 
     def update_sections_count(self):
         n = sum(1 for v in self.section_vars if v.get())
         self.sections_count_var.set(f"{n} section(s) sélectionnée(s)")
 
     def build_prompt_preview(self, rel_docx: str, selected_labels: list, mode: str) -> str:
-        mode_label = dict(MODES)[mode]
-        checklist = f"modes/{mode}/instructions/checklist.md"
-        refs_dir = f"modes/{mode}/refs"
-        lines = []
-        lines.append(f"Objectif: Relecture ‘{mode_label}’ du document {rel_docx}.")
-        if selected_labels:
-            lines.append("Sections: " + ", ".join(selected_labels))
-        else:
-            lines.append("Sections: document entier")
-        lines.append(f"Checklist: {checklist}")
-        lines.append(f"Références locales: {refs_dir}")
-        return "\n".join(lines)
+        return "\n".join([
+            f"Objectif: Relecture ‘{dict(MODES)[mode]}’ du document {rel_docx}.",
+            f"Sections: {', '.join(selected_labels) if selected_labels else 'document entier'}",
+            f"Checklist: modes/{mode}/instructions/checklist.md",
+            f"Références: modes/{mode}/refs",
+        ])
 
     def launch_analysis(self):
-        if not self.copy_relpath:
-            messagebox.showwarning("Manque fichier", "Veuillez sélectionner un fichier Word.")
-            return
-        if not self.mode:
-            messagebox.showwarning("Manque mode", "Veuillez sélectionner un mode de relecture.")
-            return
-        if not self.ensure_docx():
-            messagebox.showerror("Dépendances manquantes", "python-docx introuvable. Essayez ‘Installer dépendances…’.")
-            return
+        if not self.copy_relpath or not self.mode: messagebox.showwarning("Info", "Sélectionnez un fichier ET un mode."); return
         selected_idx = [i for i, v in enumerate(self.section_vars) if v.get()]
-        if not selected_idx:
-            if not messagebox.askyesno(
-                "Document entier", "Aucune section cochée. Voulez-vous traiter le document entier ?"
-            ):
-                return
+        if not selected_idx and not messagebox.askyesno("Document entier", "Traiter le document entier ?"): return
 
-        # A — Préparation
-        self.log("Préparation…")
-        ts = ts_now()
-        os.makedirs(WORK_DIR, exist_ok=True)
-        os.makedirs(self.output_dir, exist_ok=True)
-
-        abs_copy = os.path.join(ROOT, self.copy_relpath)
-        base_name = os.path.splitext(os.path.basename(abs_copy))[0]
-        work_copy = os.path.join(WORK_DIR, f"{base_name}_copie_{ts}.docx")
-        shutil.copy2(abs_copy, work_copy)
-
-        session = {
-            "timestamp": datetime.now().isoformat(),
-            "source_docx": self.copy_relpath,
-            "mode": self.mode,
-            "sections": [self.sections[i].label() for i in selected_idx],
-            "output_dir": self.output_dir,
-        }
-        with open(os.path.join(WORK_DIR, "session.json"), "w", encoding="utf-8") as f:
-            json.dump(session, f, ensure_ascii=False, indent=2)
-
-        prompt = self.build_prompt_preview(self.copy_relpath, session["sections"], self.mode)
-        self.prompt_txt.configure(state="normal")
-        self.prompt_txt.delete("1.0", tk.END)
-        self.prompt_txt.insert(tk.END, prompt)
-        self.prompt_txt.configure(state="disabled")
-
-        # B — Découpage par sections
         try:
-            self.log("Découpage par sections…")
-            cut_docx = filter_paragraphs_by_sections(work_copy, selected_idx, self.sections)
-        except Exception as e:
-            messagebox.showerror("Erreur — Découpage", str(e))
-            return
+            self.log("A) Préparation…")
+            ts = ts_now()
+            abs_copy = os.path.join(ROOT, self.copy_relpath)
+            base_name = os.path.splitext(os.path.basename(abs_copy))[0]
+            work_copy = os.path.join(WORK_DIR, f"{base_name}_copie_{ts}.docx")
+            shutil.copy2(abs_copy, work_copy)
 
-        # C — Relecture locale
-        try:
-            self.log("Conversion DOCX -> Markdown (travail)…")
-            md_src = docx_to_markdown(cut_docx)
-            self.log("Application de la checklist et génération des commentaires…")
+            session = { "timestamp": datetime.now().isoformat(), "source": self.copy_relpath, "mode": self.mode, "sections": [self.sections[i].label() for i in selected_idx], "output_dir": self.output_dir }
+            with open(os.path.join(WORK_DIR, "session.json"), "w", encoding="utf-8") as f: json.dump(session, f, ensure_ascii=False, indent=2)
+
+            prompt = self.build_prompt_preview(self.copy_relpath, session["sections"], self.mode)
+            self.prompt_txt.config(state="normal"); self.prompt_txt.delete("1.0", tk.END); self.prompt_txt.insert(tk.END, prompt); self.prompt_txt.config(state="disabled")
+
+            self.log("B) Découpage par sections…")
+            cut_docx_path = filter_paragraphs_by_sections(work_copy, selected_idx, self.sections)
+
+            self.log("C) Relecture (simulation IA)…")
+            md_src = docx_to_markdown(cut_docx_path)
             revised_md, comments = generate_review(md_src, self.mode)
-            md_path = os.path.join(WORK_DIR, "rapport_revise.md")
-            with open(md_path, "w", encoding="utf-8") as f:
-                f.write(revised_md)
-            csv_path = os.path.join(WORK_DIR, "commentaires.csv")
-            write_comments_csv(comments, csv_path)
+            csv_path = os.path.join(WORK_DIR, "commentaires.csv"); write_comments_csv(comments, csv_path)
+
+            self.log("D) Génération du livrable final…")
+            revised_docx_path = os.path.join(WORK_DIR, "rapport_revise.docx")
+            markdown_to_docx(revised_md, revised_docx_path, Document(cut_docx_path))
+
+            self.log("Insertion des commentaires…")
+            base_short = (base_name[:50]).rstrip(" _-.")
+            out_name = f"{base_short}_AI_commentaires_{ts_now()}.docx"
+            out_docx_path = os.path.join(self.output_dir, out_name)
+            
+            # Étape finale : utiliser l'outil Python pour ajouter les commentaires
+            add_comments_to_docx(revised_docx_path, csv_path, out_docx_path)
+
+            self.log("Livrable prêt !")
+            self.log(f"Fichier final: {out_docx_path}")
+            messagebox.showinfo("Terminé", f"Livrable généré:\n{out_docx_path}")
+
         except Exception as e:
-            messagebox.showerror("Erreur — Relecture", str(e))
-            return
-
-        # D — Livrable final Word
-        try:
-            self.log("Conversion Markdown -> DOCX révisé…")
-            revised_docx = os.path.join(WORK_DIR, "rapport_revise.docx")
-            markdown_to_docx(revised_md, revised_docx)
-
-            self.log("Comparaison et insertion des commentaires…")
-            # Avoid very long filenames which can exceed MAX_PATH in some setups
-            base_short = (base_name[:60]).rstrip(" _-.")
-            out_name = f"{base_short}_AI_suivi+commentaires_{ts_now()}.docx"
-            out_docx = os.path.join(self.output_dir, out_name)
-            run_compare_and_comment2(cut_docx, revised_docx, csv_path, out_docx)
-        except subprocess.CalledProcessError as pe:
-            messagebox.showerror("Erreur — Word Compare", f"Échec de la comparaison Word: {pe}")
-            return
-        except Exception as e:
-            messagebox.showerror("Erreur — Livrable", str(e))
-            return
-
-        self.log("Livrable prêt.")
-        self.log(f"Fichier final: {out_docx}")
-        messagebox.showinfo("Terminé", f"Livrable généré:\n{out_docx}")
-
-
-def run_compare_and_comment2(original_docx: str, revised_docx: str, comments_csv: str, output_docx: str):
-    """Improved runner that preserves detailed PowerShell/Word errors."""
-    import tempfile
-    ps1 = os.path.join(os.path.dirname(__file__), "tools/compare_and_comment.ps1")
-    if not os.path.exists(ps1):
-        raise RuntimeError("Le fichier tools/compare_and_comment.ps1 est manquant")
-
-    # Ensure output directory exists
-    out_dir = os.path.dirname(output_docx)
-    if out_dir:
-        os.makedirs(out_dir, exist_ok=True)
-
-    # Normalize to absolute paths
-    ps1 = os.path.normpath(os.path.abspath(ps1))
-    original_docx = os.path.normpath(os.path.abspath(original_docx))
-    revised_docx = os.path.normpath(os.path.abspath(revised_docx))
-    comments_csv = os.path.normpath(os.path.abspath(comments_csv))
-    output_docx = os.path.normpath(os.path.abspath(output_docx))
-
-    # Pre-checks
-    for p, label in [
-        (original_docx, "Document original"),
-        (revised_docx, "Document révisé"),
-        (comments_csv, "Fichier CSV des commentaires"),
-    ]:
-        if not os.path.exists(p):
-            raise RuntimeError(f"Fichier introuvable pour {label}: {p}")
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".log") as tmp:
-        log_file = tmp.name
-
-    try:
-        pwsh_cmd = (
-            f'$ErrorActionPreference = "Stop"; '
-            f'$OutputEncoding = [System.Text.Encoding]::UTF8; '
-            f'try {{ '
-            f'  & "{ps1}" -OriginalDocx "{original_docx}" -RevisedDocx "{revised_docx}" -CommentsCsv "{comments_csv}" -OutputDocx "{output_docx}" 2>&1 '
-            f'  | Tee-Object -FilePath "{log_file}" '
-            f'}} catch {{ '
-            f'  $m = ($_.Exception | Out-String); if ([string]::IsNullOrWhiteSpace($m)) {{ $m = ($_ | Out-String) }} '
-            f'  [System.Console]::Error.WriteLine($m); exit 1 '
-            f'}}'
-        )
-
-        result = subprocess.run(
-            [
-                'powershell.exe',
-                '-NoProfile',
-                '-ExecutionPolicy', 'Bypass',
-                '-NoLogo',
-                '-NonInteractive',
-                '-Command', pwsh_cmd,
-            ],
-            capture_output=True,
-            text=True,
-            encoding='utf-8',
-            errors='replace',
-        )
-
-        if result.returncode != 0:
-            detail = ''
-            # Try multiple encodings since Windows PowerShell 5.1 may write UTF-16
-            for enc in ('utf-8', 'utf-16', 'cp1252'):
-                try:
-                    with open(log_file, 'r', encoding=enc, errors='replace') as f:
-                        t = (f.read() or '').strip()
-                    if t:
-                        detail = t
-                        break
-                except Exception:
-                    continue
-            if not detail:
-                detail = (result.stderr or result.stdout or '').strip()
-            if not detail:
-                detail = 'Aucune sortie d’erreur disponible.'
-            raise RuntimeError("Erreur lors de la comparaison des documents Word.\n\nDétails :\n" + detail)
-    finally:
-        try:
-            if os.path.exists(log_file):
-                os.unlink(log_file)
-        except Exception:
-            pass
-
+            self.log(f"ERREUR: {e}")
+            import traceback; traceback.print_exc()
+            messagebox.showerror("Erreur Critique", f"Le processus a échoué:\n{e}")
 
 if __name__ == "__main__":
     App().mainloop()
