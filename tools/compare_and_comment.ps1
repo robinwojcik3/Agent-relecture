@@ -32,6 +32,19 @@ try {
     # Comparer avec le document original
     $doc.Compare($original_docx)
 
+    # Mettre en évidence en vert toutes les insertions issues de la comparaison
+    $wdRevisionInsert = 1        # WdRevisionType.wdRevisionInsert
+    $wdBrightGreen    = 4        # WdColorIndex.wdBrightGreen
+    foreach ($rev in $doc.Revisions) {
+        try {
+            if ($rev.Type -eq $wdRevisionInsert) {
+                $rev.Range.HighlightColorIndex = $wdBrightGreen
+            }
+        } catch {
+            # Ignorer les erreurs de mise en forme ponctuelles
+        }
+    }
+
     # Injecter les commentaires depuis le CSV
     $comments = Import-Csv -Path $comments_csv -Encoding UTF8
     foreach ($comment in $comments) {

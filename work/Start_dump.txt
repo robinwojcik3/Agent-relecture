@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 import os
 import sys
 import json
@@ -712,12 +712,6 @@ def _build_prompt_preview(self, rel_docx: str, selected_labels: list, mode: str)
             f"enregistré dans le dossier de sortie suivant : {dossier_sortie}. Le nommage conseillé est : {nom_basique}_AI_suivi+commentaires.docx. "
             f"Ce livrable doit être auto-suffisant pour une relecture humaine et une instruction administrative.\n\n"
 
-            f"Mise en évidence des modifications. Toutes les propositions de réécriture et ajouts de l’agent IA doivent être clairement signalés par un surlignage vert (green text highlight), en plus du suivi des modifications Word. "
-            f"Utilise la mention 'Proposition de reformulation:' dans les commentaires Word pour introduire chaque texte remplacé ou ajouté, afin d’en faciliter la validation visuelle.\n\n"
-
-            f"Modes d’intervention. Tu n’utilises que deux modalités: (1) modifications directes dans le corps du texte en suivi des modifications (les insertions seront surlignées en vert pour la lisibilité); (2) commentaires Word ancrés au plus près du passage concerné (comme un relecteur humain) pour justifier, signaler une limite, ou proposer une alternative lorsque l’édition directe n’est pas appropriée. "
-            f"N’insère jamais de pseudo-commentaires sous forme de texte dans le corps du document (pas de [Commentaire] en ligne); réserve toute remarque au système de commentaires Word.\n\n"
-
             f"Rappels de sécurité et de focalisation. Ne touche jamais au fichier original. Ne lance aucune opération en dehors du périmètre du fichier {chemin_decoupee}. "
             f"Ne dévie pas vers d’autres sections que celles contenues dans cette copie. Si un écart de périmètre est détecté, suspends l’analyse et demande une clarification, "
             f"mais n’emploie jamais {chemin_original} comme base de travail.\n\n"
@@ -842,3 +836,4 @@ App.launch_analysis = _launch_prep_only_v3
 
 if __name__ == "__main__":
     App().mainloop()
+
