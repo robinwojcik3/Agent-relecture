@@ -163,7 +163,7 @@ def sanitize_text(s: str) -> str:
     s = re.sub(r"\s+", " ", s)
     s = re.sub(r"\s+([,;:!?])", r"\1", s)
     s = re.sub(r"\(\s+", "(", s)
-    s = re.sub(r"\s+\)", ")", s)
+    s = re.sub(r"\s+\")", ")", s)
     return s.strip()
 
 ALLOWED_CATEGORIES = ["coherence", "methodologie", "reglementaire", "carto", "redaction"]
@@ -233,7 +233,7 @@ def generate_review(md_in: str, mode: str):
         txt_low = cleaned.lower()
         make_comment = None
         if len(cleaned) > 600: make_comment = ("P3", "redaction", "Paragraphe très long: envisager de le scinder.")
-        if any(x in txt_low for x in ["tbd", "???", "à définir"]): make_comment = ("P1", "coherence", "Marqueur d\'incertain repéré: préciser/retirer.")
+        if any(x in txt_low for x in ["tbd", "???", "à définir"]): make_comment = ("P1", "coherence", "Marqueur d'incertain repéré: préciser/retirer.")
         if ("carte" in txt_low or "figure" in txt_low) and not re.search(r"\d", cleaned): make_comment = ("P3", "carto", "Référence à une carte/figure sans numéro.")
 
         if make_comment:
@@ -407,7 +407,8 @@ class App(tk.Tk):
         name, ext = os.path.splitext(os.path.basename(src_path))
         dest = os.path.join(INPUT_DIR, f"{name}_copie_{ts_now()}{ext}")
         shutil.copy2(src_path, dest)
-        return os.path.relpath(dest, ROOT).replace("\", "/")
+        rel = os.path.relpath(dest, ROOT)
+        return rel.replace("\\", "/")
 
     def show_sections(self):
         if not self.copy_relpath: messagebox.showwarning("Info", "Sélectionnez un fichier."); return

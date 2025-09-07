@@ -1,0 +1,100 @@
+
+        f4 = tk.LabelFrame(left, text="4) Dossier de sortie"); f4.pack(fill="x", **pad)
+        self.out_var = tk.StringVar(value=self.output_dir)
+        tk.Label(f4, textvariable=self.out_var, anchor="w").pack(fill="x", padx=10, pady=5)
+        b4 = tk.Frame(f4); b4.pack(anchor="w", padx=10, pady=5)
+        tk.Button(b4, text="Choisir le dossier…", command=self.choose_output_dir).pack(side="left", padx=5)
+        tk.Button(b4, text="Ouvrir le dossier", command=self.open_output_dir).pack(side="left", padx=5)
+
+        f5 = tk.LabelFrame(left, text="5) Lancer l’analyse"); f5.pack(fill="both", expand=True, **pad)
+        tk.Button(f5, text="Lancer l’analyse", command=self.launch_analysis).pack(anchor="w", padx=10, pady=5)
+        tk.Label(f5, text="Journal d’exécution").pack(anchor="w", padx=10)
+        self.log_txt = tk.Text(f5, height=10, wrap="word", state="disabled")
+        self.log_txt.pack(fill="both", expand=True, padx=10, pady=5)
+
+        pr_frame = tk.LabelFrame(right, text="Prompt opérationnel (audit)"); pr_frame.pack(fill="both", expand=True, **pad)
+        self.prompt_txt = tk.Text(pr_frame, wrap="word")
+        sb = ttk.Scrollbar(pr_frame, orient="vertical", command=self.prompt_txt.yview)
+        self.prompt_txt.config(yscrollcommand=sb.set, state="disabled"); self.prompt_txt.pack(side="left", fill="both", expand=True); sb.pack(side="right", fill="y")
+
+    def choose_source(self):
+        path = filedialog.askopenfilename(filetypes=[("Documents Word", "*.docx")])
+        if not path: return
+        self.source_path = os.path.abspath(path)
+        self.src_var.set(self.source_path)
+        try: self.copy_relpath = self._copy_to_input(self.source_path); self.log(f"Copie créée: {self.copy_relpath}")
+        except Exception as e: messagebox.showerror("Erreur", str(e)); self.copy_relpath = None
+
+    def open_source_folder(self):
+        if not self.source_path: messagebox.showinfo("Info", "Aucun fichier."); return
+        try: os.startfile(os.path.dirname(self.source_path))
+        except Exception as e: messagebox.showerror("Erreur", str(e))
+
+    def set_mode(self, key):
+        self.mode = key
+        for k, b in self.mode_buttons.items(): b.config(bg=("#2e86de" if k == key else "SystemButtonFace"), fg=("white" if k == key else "SystemButtonText"))
+
+    def choose_output_dir(self):
+        d = filedialog.askdirectory()
+        if d: self.output_dir = os.path.abspath(d); os.makedirs(d, exist_ok=True); self.out_var.set(d)
+
+    def open_output_dir(self):
+        d = self.output_dir or OUTPUT_DIR; os.makedirs(d, exist_ok=True)
+        try: os.startfile(d)
+        except Exception as e: messagebox.showerror("Erreur", str(e))
+
+    def _copy_to_input(self, src_path):
+        name, ext = os.path.splitext(os.path.basename(src_path))
+        dest = os.path.join(INPUT_DIR, f"{name}_copie_{ts_now()}{ext}")
+        shutil.copy2(src_path, dest)
+        return os.path.relpath(dest, ROOT).replace("\", "/")
+
+    def show_sections(self):
+        if not self.copy_relpath: messagebox.showwarning("Info", "Sélectionnez un fichier."); return
+        try:
+            self.sections = analyze_sections(os.path.join(ROOT, self.copy_relpath))
+            pre = [i for i, v in enumerate(self.section_vars) if v.get()] if self.section_vars else []
+            dlg = SectionsDialog(self, self.sections, pre)
+            self.wait_window(dlg)
+            if dlg.result is not None:
+                self.section_vars = [tk.BooleanVar(value=(i in set(dlg.result))) for i in range(len(self.sections))]
+                for w in list(self.sections_frame.children.values()): w.destroy()
+                summary = [self.sections[i].label() for i in sorted(dlg.result)][:6]
+                if summary:
+                    for lab in summary: tk.Label(self.sections_frame, text=f"☑ {lab}", anchor="w").pack(anchor="w")
+                    if len(dlg.result) > 6: tk.Label(self.sections_frame, text="…", anchor="w").pack(anchor="w")
+                else: tk.Label(self.sections_frame, text="(document entier)", anchor="w").pack(anchor="w")
+            self.update_sections_count()
+        except Exception as e: messagebox.showerror("Erreur", f"Analyse des sections impossible:\n{e}")
+
+    def update_sections_count(self):
+        n = sum(1 for v in self.section_vars if v.get())
+        self.sections_count_var.set(f"{n} section(s) sélectionnée(s)")
+
+    def build_prompt_preview(self, rel_docx: str, selected_labels: list, mode: str) -> str:
+        return "\n".join([
+            f"Objectif: Relecture ‘{dict(MODES)[mode]}’ du document {rel_docx}.",
+            f"Sections: {', '.join(selected_labels) if selected_labels else 'document entier'}",
+            f"Checklist: modes/{mode}/instructions/checklist.md",
+            f"Références: modes/{mode}/refs",
+        ])
+
+    def launch_analysis(self):
+        if not self.copy_relpath or not self.mode: messagebox.showwarning("Info", "Sélectionnez un fichier ET un mode."); return
+        selected_idx = [i for i, v in enumerate(self.section_vars) if v.get()]
+        if not selected_idx and not messagebox.askyesno("Document entier", "Traiter le document entier ?"): return
+
+        try:
+            self.log("A) Préparation…")
+            ts = ts_now()
+            abs_copy = os.path.join(ROOT, self.copy_relpath)
+            base_name = os.path.splitext(os.path.basename(abs_copy))[0]
+            work_copy = os.path.join(WORK_DIR, f"{base_name}_copie_{ts}.docx")
+            shutil.copy2(abs_copy, work_copy)
+
+            session = { "timestamp": datetime.now().isoformat(), "source": self.copy_relpath, "mode": self.mode, "sections": [self.sections[i].label() for i in selected_idx], "output_dir": self.output_dir }
+            with open(os.path.join(WORK_DIR, "session.json"), "w", encoding="utf-8") as f: json.dump(session, f, ensure_ascii=False, indent=2)
+
+            prompt = self.build_prompt_preview(self.copy_relpath, session["sections"], self.mode)
+            self.prompt_txt.config(state="normal"); self.prompt_txt.delete("1.0", tk.END); self.prompt_txt.insert(tk.END, prompt); self.prompt_txt.config(state="disabled")
+
