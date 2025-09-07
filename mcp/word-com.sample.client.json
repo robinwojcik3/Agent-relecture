@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "word-com": {
+      "command": "python",
+      "args": ["mcp/word_com_server.py"],
+      "env": {}
+    }
+  }
+}
+

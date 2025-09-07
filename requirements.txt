@@ -1,2 +1,4 @@
 python-docx==1.1.2
 lxml==5.2.2
+pywin32>=306
+mcp>=1.2.0

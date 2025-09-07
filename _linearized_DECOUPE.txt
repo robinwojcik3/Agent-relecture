@@ -1,0 +1,379 @@
+SOURCE_FILE: input\prédiag_DECOUPE.docx
+PARA[0001]: PRÉ-DIAGNOSTIC NATURALISTE ET ÉVALUATION DES ENJEUX ÉCOLOGIQUES DU SITE
+PARA[0002]: Le présent chapitre expose les enjeux de conservation avérés et pressentis (potentialités écologiques des habitats naturels et des habitats d'espèces), en fonction des espèces floristiques et faunistiques identifiées ou potentiellement présentes sur l'emprise du site étudié.
+PARA[0003]: Cette analyse repose sur un passage de terrain en date du 11/06/2025, réalisé conjointement par le faunisticien Vincent RIGAUD et le botaniste Robin WOJCIK, qui ont parcouru l’ensemble de la zone d’étude. Cette visite a permis d’obtenir une image représentative des enjeux écologiques potentiels en présence, mais en aucun cas d’établir un inventaire écologique exhaustif du secteur.
+PARA[0004]: Ce pré-diagnostic ne saurait constituer le volet écologique de l’étude d’impact du projet (ou tout autre document nécessaire à une procédure administrative), qui nécessiterait un effort d'échantillonnage plus important sur le terrain (au regard du respect du calendrier écologique favorable à l'observation de la totalité des espèces floristiques et faunistiques).
+PARA[0005]: 
+PARA[0006]: Analyse des enjeux phytoécologiques
+PARA[0007]: Les habitats identifiés ont fait l’objet d’une cartographie et les plantes vasculaires ont été notées. Si une étude approfondie (diagnostic écologique) était réalisée ultérieurement, celle-ci pourrait engendrer un remodelage plus précis de la typologie des habitats. Les enjeux phytoécologiques présentés ici sont provisoires et susceptibles d’évoluer avec la mise en œuvre d’inventaires complémentaires, si nécessaires. Les inventaires pris en compte dans cette section intègrent à la fois les données collectées lors de la prospection du 11 juin 2025 et une partie des relevés réalisés au cours de l’année 2024, la zone d’étude prospectée en 2025 se superposant partiellement à celle prospectée en 2024, notamment dans ses secteurs amont et aval.
+PARA[0008]: Enjeux liés aux habitats
+PARA[0009]: Données bibliographiques
+PARA[0010]: Le site d’étude se situe majoritairement à l’étage montagnard, entre 1200 et 1600 m d’altitude, avec des secteurs atteignant l’étage subalpin au-delà de 1600 m. Le climat est montagnard de transition entre Alpes du Nord et du Sud : pour 1971-2000, la température annuelle moyenne était de 7,4 °C avec 1205 mm de précipitations, tandis que pour 1991-2020 elle atteint 8,3 °C et 1241,5 mm. Il se caractérise par des hivers froids avec enneigement régulier et des étés frais, ponctués d’épisodes secs.
+PARA[0011]: Les sols sont sablo-limoneux, acides et très caillouteux, issus de roches cristallines (unité n° 69 du Référentiel pédologique de l’Isère). Les Rankosols et Brunisols dominent, souvent peu profonds mais bien drainés.
+PARA[0012]: La végétation potentielle correspond à un étagement classique : hêtraie d’altitude à Polygonatum verticillatum dans les parties basses, pinèdes à Pin à crochets et Pin cembro en zone intermédiaire, puis pelouses alpines silicicoles et tourbières acides à Sphaignes aux altitudes supérieures. Toutefois, la végétation actuelle est principalement représentée par des formations secondaires mises en place en lien avec des pratiques agro-pastorales passées. Les pelouses sèches et prairies de fauche dominent en aval et sont maintenues par le pâturage bovin qui limite la dynamique forestière et favorise des espèces herbacées nitrophiles. Dans la partie médiane, des formations boisées pionnières se développent sur des secteurs perturbés par érosion, chutes de pierres ou avalanches. L’abandon partiel du pastoralisme entraîne localement l’enfrichement, marqué par la recolonisation par des ligneux pionniers comme le genévrier commun.
+PARA[0013]: En effet, la dynamique de déclin du pâturage et de regain du couvert forestier est bien illustrée par la série d’images ci-dessous. Entre 1950 et aujourd’hui, les anciens alpages et prairies de fauche ont progressivement été abandonnés, favorisant l’enfrichement puis la fermeture forestière, tandis que les milieux ouverts se limitent désormais aux zones les plus contraintes (éboulis, dalles rocheuses, couloirs d’avalanches et pâturage résiduel).
+PARA[0014]: 
+PARA[0015]: 
+PARA[0016]: 
+PARA[0017]: Figure  : Évolution du couvert forestier du site de 1950 à aujourd’hui (IGN – Remonter le temps)
+PARA[0018]: 
+PARA[0019]: La carte ci-dessous présente l’occupation des sols actuelle du territoire d’étude selon la typologie Corine Land Cover (CLC18 : base vectorielle produite par photo-interprétation à partir d’images satellites) qui classe l’occupation biophysique du sol en fonction de leur nature et leur physionomie.
+PARA[0020]: 
+PARA[0021]: Figure 10 : Occupation du sol au droit de la zone d’étude (CLC, 2018)
+PARA[0022]: L’occupation des sols de la commune de Lavaldens est actuellement dominée par les forêts et milieux semi-naturels, représentant 92,6 % de la surface en 2018. Ces milieux comprennent des espaces ouverts avec peu ou pas de végétation (37,5 %), des milieux à végétation arbustive et herbacée (30,2 %) et des forêts (24,9 %). Les prairies, qui couvrent 7,4 % du territoire, sont également un élément majeur.
+PARA[0023]: Résultats des inventaires
+PARA[0024]: La prospection naturaliste réalisée le 11/06/2025 a mis en évidence la présence de 26 habitats au sein de la zone d’étude. Le tableau ci-dessous présente les habitats recensés sur la zone d’étude ainsi que les cortèges floristiques qui les caractérisent :
+PARA[0025]: Tableau 3 : Habitats inventoriés et leur cortège floristique caractéristique
+PARA[0026]: 1 Prodrome des végétations de France
+PARA[0027]: 
+PARA[0028]: 
+PARA[0029]: 
+PARA[0030]: 
+PARA[0031]: 
+PARA[0032]: 
+PARA[0033]: Tableau 4 : Photographies des habitats contactés dans la zone d'étude
+PARA[0034]: 
+PARA[0035]: Enjeux de conservation des habitats
+PARA[0036]: Afin de définir les enjeux écologiques des habitats de la zone d’étude, le tableau suivant détaille les différentes unités de végétation en fonction de leur typologie CORINE Biotopes et EUNIS, de leur statut communautaire (EUR28).
+PARA[0037]: 
+PARA[0038]: 
+PARA[0039]: 
+PARA[0040]: Tableau 5 : Statuts et enjeux des habitats inventoriés
+PARA[0041]: Code EUR28 : code des habitats naturels d'intérêt communautaire ; Zone humide : H (humide) / p (pro parte) / - (non-humide).
+PARA[0042]: La carte suivante présente la délimitation des habitats naturels et semi-naturels identifiés sur la zone d'étude :
+PARA[0043]: 
+PARA[0044]: Figure 11 : Habitats recensés au droit de la zone d’étude
+PARA[0045]: 
+PARA[0046]: Justification des enjeux de conservation :
+PARA[0047]: Au total, 26 habitats ont été contactés au sein de la zone d’étude lors de l’inventaire réalisé le 11/06/2025. Parmi ceux-ci, seuls 5 habitats sont considérés comme patrimoniaux au sens des typologies utilisées :
+PARA[0048]: Une jonchaie est présente dans la partie avale de la zone d’étude, au pied d’un talus de bas de pente, au sein d’une prairie, où une légère dépression topographique favorise l’accumulation d’eau. Cette formation présente une physionomie herbacée dense structurée par des touffes de joncs. Ce type de végétation se développe typiquement dans des stations humides à engorgement temporaire à prolongé, sur substrats souvent acides à neutres dans des dépressions mal drainées. À l’échelle régionale, ces communautés subissent une régression notable en raison du drainage des zones humides et de l’intensification agricole ainsi qu’une dégradation. Selon le Conservatoire botanique national alpin, cette végétation est considérée comme quasi-menacée (NT) sur le territoire de la région AURA et vulnérable (VU) sur la moitié est du territoire (gérée par le CBNA), notamment du fait de menaces fortes observées et d’une répartition restreinte à l’est de la région. Localement, le syntaxon du Juncion acutiflori est associé à un enjeu de conservation jugé assez fort.
+PARA[0049]: Une cariçaie acidiphile subalpine est présente dans la partie amont de la zone d’étude, sous la forme de petites stations localisées dans des dépressions topographiques ponctuelles issues de l’érosion du relief. Cette végétation se caractérise par une physionomie herbacée dense et basse, dominée par des cypéracées hygrophile adapté aux milieux semi-tourbeux. Cette végétation se développe typiquement dans des stations fraîches à engorgement prolongé, sur substrats acides et oligotrophes. À l’échelle régionale, les cariçaies subalpines sont en régression sous l’effet du drainage, de la pression pastorale, de l’enfrichement ainsi que le compactage de sols liés à la sur-fréquentation. Ces milieux possèdent une flore diversifiée pouvant comprendre des espèces patrimoniales, souvent cantonnées à des stations isolées ou relictuelles. Selon le conservatoire botanique national alpin, cette végétation est considérée comme quasi-menacée, sa répartition étant limitée à moins de 50 km², avec des menaces sérieuses plausibles (critère UICN A3c). Localement, le syntaxon du Soldanello alpinae-Caricetum davallianae est associé à un enjeu de conservation jugé modéré.
+PARA[0050]: Une hêtraie méso-xérophile acidiphile est largement présente dans la partie centrale de la zone d’étude, où elle forme des peuplements feuillus dominés par le hêtre, avec une strate arbustive éparse et une strate herbacée réduite par le fort ombrage du couvert. Cette formation se développe typiquement sur sols acides profonds, dans des stations montagnardes fraîches à tempérées, bien drainées mais sans excès hydrique. À l’échelle régionale, les hêtraies connaissent une régression ou une dégradation de leur état de conservation, liées notamment au traitement en taillis à courte révolution, aux coupes rases et aux enrésinements, auxquels s’ajoutent les pressions climatiques accentuant sécheresses et stress hydriques. Sur le site, la hêtraie méso-xérophile acidiphile présente un bon état de conservation, avec la présence de vieux individus de hêtre. Cette formation climacique, peu résiliente, joue un rôle majeur dans la trame verte locale ; sa flore est globalement assez commune mais elle peut abriter ponctuellement des espèces patrimoniales telles qu’Epipogium aphyllum ou Cardamine bulbifera. Les hêtraies présentent sur le site ne sont pas concernées par le statut « EN » attribué aux hêtraies subalpines de la liste rouge des forêts de montagne, la limite supérieure des boisements se situant ici en dessous de 1700 m. Du fait de son caractère d’intérêt communautaire (9130) et de sa nature de boisement climacique peu résilient, les Hêtraies du Fagion sylvaticae sont localement associés à un enjeu de conservation jugé modéré.
+PARA[0051]: Des zones de pelouses sèches montagnardes sont présente dans la partie centrale de la zone d’étude, au sein de milieux ouverts où se développe une végétation thermophile adaptée à l’ensoleillement important ainsi qu’aux et aux sols maigres et bien drainés. Cette formation herbacée présente un cortège floristique oligotrophique caractérise par une physionomie rase et discontinue. À l’échelle régionale, la situation de ces pelouses est contrastée : subissant les effets de la déprise rurale et du reboisement naturel ou volontaire avec des résineux, elles se maintiennent encore en moyenne montagne dans les secteurs de pâturage extensif, tandis qu’à basse altitude elles sont très menacées par l’intensification des pratiques agricoles, en particulier la fertilisation, le labour, l’artificialisation des prairies et l’accroissement des charges de pâturage. Selon le Conservatoire botanique national alpin, cette végétation est considérée comme quasi-menacée (NT) sur le territoire de la région AURA et vulnérable (VU) sur la moitié est du territoire et fait l’objet de fortes menaces ayant justifié son classement au titre du critère A4b de la Liste rouge régionale. Localement, le syntaxon du Violion caninae est associé à un enjeu de conservation jugé assez fort.
+PARA[0052]: Une pelouse subalpine à Flouve alpine est présente dans la partie amont de la zone d’étude, au-dessus de la hêtraie, où elle se manifeste sous forme de prairies relictuelles témoignant d’anciennes pratiques pastorales. Cette formation herbacée se caractérise par une physionomie ouverte de pelouse montagnarde rase, dominée par des graminées pérennes, avec un couvert végétal relativement homogène. Ce type de végétation se développe préférentiellement sur des sols pauvres acidicline dans des stations exposées aux conditions fraîches et ventées de l’étage subalpin. À l’échelle régionale, ce type de prairie est en régression du fait de l’intensification agricole, de la fertilisation, du labour et de l’artificialisation des prairies. Cette végétation présente un caractère patrimonial du fait de son écologie spécifique, de sa faible aire de répartition actuellement en déclin et de sa sensibilité aux pressions anthropiques. Selon le Conservatoire botanique national alpin, cette végétation est considérée quasi-menacée (NT) sur le territoire de la région AURA et vulnérable (VU) sur la moitié est du territoire et subit de fortes menaces liées aux pratiques agricoles intensives (critère UICN A4b). Localement, le syntaxon du Violion caninae est associé à un enjeu de conservation jugé assez fort.
+PARA[0053]: 
+PARA[0054]: La carte suivante présente le niveau d’enjeu associé aux habitats naturels et semi-naturels identifiés sur la zone d'étude :
+PARA[0055]: 
+PARA[0056]: 
+PARA[0057]: Figure  : Niveau d’enjeu associé aux habitats
+PARA[0058]: 
+PARA[0059]: Enjeux liés aux zones humides floristiques
+PARA[0060]: Délimitation des zones humides floristiques
+PARA[0061]: L’étude des habitats naturels et semi-naturels de la zone a permis d’identifier 26 habitats différents au sein de la zone d’étude. Au total, 2 des habitats contactés sur le site sont considérés comme zones humides floristiques avérées au sens de l’arrêté du 24 juin 2008 du code de l’environnement, modifié par l’arrêté du 1ᵉʳ octobre 2009 qui précise les critères de définition et de délimitation des zones humides :
+PARA[0062]: Tableau 6 : Habitats de la zone d'étude considérés comme zones humides floristiques avérées
+PARA[0063]: 
+PARA[0064]: Ces zones humides floristiques totalisent une surface de 360 m2 au sein de la zone d’étude.
+PARA[0065]: 
+PARA[0066]: Toutefois, 9 habitats cotés pro parte ont été identifiés au sein de la zone d’étude. Il s’agit de formations végétales listées comme pro parte dans l'annexe IIb de l'arrêté du 24 juin 2008 modifié par l’arrêté du 1er octobre 2009 soit parce que les habitats de niveau inférieur ne sont pas tous humides, soit parce qu'il n'existe pas de déclinaison typologique plus précise permettant d'effectuer le distinguo. Les caractéristiques de ces habitats sont présentées dans le tableau ci-dessous :
+PARA[0067]: 
+PARA[0068]: Tableau 7 : Habitats de la zone d'étude considérés comme zones humides floristiques pro parte
+PARA[0069]: 
+PARA[0070]: Pour les habitats cotés pro parte, il n'est pas possible de conclure sur la nature humide de la zone étudiée à partir de la seule lecture des données ou cartes relatives aux habitats. La carte suivante présente la localisation des zones humides floristiques présentes sur la zone d'étude :
+PARA[0071]: 
+PARA[0072]: 
+PARA[0073]: Figure  : Cartographie des zones humides floristiques de la zone d'étude
+PARA[0074]: 
+PARA[0075]: Enjeux liés aux espèces floristiques
+PARA[0076]: Données bibliographiques
+PARA[0077]: Selon la base de données naturalistes de l’INPN, 1 778 espèces floristiques ont été inventoriées dans le massif de Taillefer et sur le plateau Matheysin au cours des 20 dernières années (2004-2024). Parmi ces espèces, 65 sont considérées comme patrimoniales, c’est-à-dire soit protégées, soit considérées comme menacées (a minima ‘NT’ sur liste rouge ou inscrite en annexe II de la Directive Habitat). Ces espèces sont listés ci-après :
+PARA[0078]: 
+PARA[0079]: Au cours de l’inventaire mené par Améten le 11 juin 2025, une attention particulière a été portée à la recherche des espèces patrimoniales cités ci-dessus qui présentent une écologie correspondant aux habitats observés sur le site. Certaines de ces espèces ont été contactées au sein de la zone (voire le résultat des inventaires à la section 5.1.3.2).
+PARA[0080]: 
+PARA[0081]: Les espèces qui n’ont pas été contactées au sein de la zone d’étude au cours de l’inventaire mené par Améten sont pour la plupart considérés comme absentes dans la zone d’étude étant donné que les inventaires ont été menés au cours de la période favorables à leur observation (mois de juin). Cependant, certaines espèces sont malgré tout considérées comme potentiellement présentes, soit parce que l’inventaire n’a pas couvert leur période phénologique optimale, soit parce que certains habitats favorables n’ont pu être prospectés de manière exhaustive en raison de difficultés d’accès :
+PARA[0082]: Espèces floristiques patrimoniales considérées potentiellement présentes du fait d’un inventaire réalisé en dehors de leur période favorable d’observation :
+PARA[0083]: Tableau  : Phénologie des espèces patrimoniales potentiellement présentes
+PARA[0084]: X Inventaire du 11 juin 2025.  Flor. : Période favorable à l’observation de l’espèce.
+PARA[0085]: Espèces floristiques patrimoniales potentiellement présentes du fait d’habitats favorables inaccessibles :
+PARA[0086]: Certaines espèces sont considérées comme potentiellement présentes car les habitats qui leur sont favorables n’ont pas pu être prospectés de manière exhaustive au cours de l’inventaire, en raison des difficultés d’accès liées à l’escarpement du terrain. Ces milieux comprennent notamment les dalles sciaphiles fraîches, les dalles sèches, les éboulis subalpins instables et les cours d’eau. Le tableau ci-après présente le statut réglementaire et de conservation des espèces patrimoniales susceptibles d’y être associées. La Silène du Valais (Silene vallesia) et l’Androsace de Suisse (Androsace helvetica) est adaptée aux pelouses rocailleuses et aux éboulis stabilisés de l’étage montagnard à alpin, sur sols neutres à acides. En vue son écologie, cette espèce est considérée comme potentiellement présente dans zones escarpés (dalle sèche) aux abords des cours d’eau qui n’ont pas pu être prospectés de manière exhaustive.
+PARA[0087]: 
+PARA[0088]: La section ci-dessous présente brièvement l’écologie et le statut patrimoniale des espèces floristiques considérées potentiellement présentes sur le site :
+PARA[0089]: 
+PARA[0090]: L’Épipogon sans feuilles (Epipogium aphyllum) croît sur les litières épaisses et tapis de mousses dans les hêtraies, sapinières et plantations d’épicéas fraîches, sur sols humides à acides ou basiques. Cette espèces est protégée à l’échelle nationale. Sur liste rouge, elle est considérée comme quasi-menacée (NT) au niveau national et vulnérable (VU) au niveau régional.
+PARA[0091]: La Vergerette d’Attique (Erigeron atticus) se développe dans les pelouses, ourlets et lisières depuis l’étage montagnard jusqu’au subalpin, sur substrats acides ou basiques. Sur liste rouge, cette espèce est considérée comme quasi-menacée (NT) au niveau régional.
+PARA[0092]: La Gagée jaune (Gagea lutea) affectionne les sols riches, profonds et humides, présents dans les lisières de hêtraies, aulnaies, forêts riveraines et prairies fraîches en montagne. Cette espèces est protégée à l’échelle nationale (PN, Art. 1).
+PARA[0093]: La Gagée velue (Gagea villosa) est inféodée aux milieux ouverts secs et ensoleillés, tels que champs cultivés, vignes, friches, pelouses sèches et bords de chemins, souvent en contexte anthropisé. Cette espèces est protégée à l’échelle nationale (PN Art. 1).
+PARA[0094]: L’Orge des bois (Honorius nutans) se rencontre dans les prairies thermophiles, friches sableuses, talus secs et bords de champs, sur sols légers et ensoleillés. Cette espèces est protégée à l’échelle régionale (PR, Art. RV82). Sur liste rouge, cette espèce est considérée comme quasi-menacée (NT) au niveau national et régional.
+PARA[0095]: La Saussurée discolore (Saussurea discolor) occupe les pelouses basophiles arctico-alpines, adaptées aux conditions froides mais sans enneigement prolongé. Cette espèces est protégée à l’échelle régionale (PR, Art. RV82). Sur liste rouge, cette espèce est considérée comme vulnérable (VU) au niveau régional.
+PARA[0096]: La Silène du Valais (Silene vallesia) croît dans les pelouses rocailleuses thermophiles, les éboulis stabilisés et les rochers secs, sur sols neutres à acides de l’étage montagnard à alpin. Sur liste rouge, cette espèce est considérée comme quasi-menacée (NT) au niveau régional.
+PARA[0097]: La cartographie ci-dessous précise la localisation des habitats qui sont favorables aux espèces floristiques patrimoniales considérées potentiellement présentes citées ci-dessus :
+PARA[0098]: 
+PARA[0099]: Figure  : Habitats favorables aux espèces floristiques patrimoniales potentiellement présentes
+PARA[0100]: 
+PARA[0101]: Résultats des inventaires
+PARA[0102]: Au total, 252 espèces végétales ont été identifiées dans la zone d’étude. Cette liste intègre à la fois les données collectées lors de la prospection du 11 juin 2025 et une parties des données collectées au cours des inventaires menés en 2024. Les données de 2024 ont été intégrées car les zones d’étude de 2024 et de 2025 se recouvrent en partie, notamment dans les secteurs amont et aval. Les espèces végétales recensées au sein de la zone d’étude sont listées dans le tableau ci-dessous :
+PARA[0103]: Tableau 9 : Liste et statuts des espèces floristiques observées sur la zone d’étude
+PARA[0104]: Légende : CR : en danger critique ; EN : en danger ; VU : vulnérable ; NT : quasi-menacé ; LC : préoccupation mineure ; DD : données insuffisantes ; NA : non applicable ; NE : non évaluée ; ZNIEFF : espèce déterminante pour la désignation des zones naturelles d’intérêt écologique, faunistique et floristique (ZNIEFF) en région Auvergne-Rhône-Alpes ; Messicoles  LR : espèce inscrite au plan régional messicoles ; Invasives LN : liste nationale des espèces végétales exotiques envahissantes ; Invasives LR :  liste régionale des espèces végétales exotiques envahissantes ZH : caractéristique de zone humide ; PNA : plan national d’actions.
+PARA[0105]: 
+PARA[0106]: 
+PARA[0107]: 
+PARA[0108]: Enjeux de conservation des espèces floristiques
+PARA[0109]: L’inventaire floristique du 11/06/2025 a mis en évidence la présence de plusieurs espèces floristiques patrimoniales (protégées et / ou menacées) :
+PARA[0110]: L’Antennaire dioïque (Antennaria dioica) est une plante vivace à tiges dressées de 5 à 25 cm, cotonneuses, portant des rosettes de feuilles obovales et des capitules groupés en petit corymbe serré aux involucres blancs ou rosés. Elle croît dans les pelouses, landes et boisements clairs sur substrats acides, depuis l’étage collinéen jusqu’à l’alpin, et se rencontre notamment dans les pelouses rases acidiphiles d’altitude. Sur liste rouge, cette espèce est considérée comme quasi-menacée (NT) au niveau national.
+PARA[0111]: La Campanule en épi (Campanula spicata) est une plante bisannuelle de 20 à 60 cm, densément feuillée à la base, présentant une inflorescence en épi allongé de fleurs bleu foncé sessiles. Elle affectionne les pelouses steppiques et les ourlets secs, principalement aux étages montagnard et subalpin, sur sols pauvres et secs. Sur liste rouge, cette espèce est considérée comme quasi-menacée (NT) au niveau régional.
+PARA[0112]: Le Céraiste des Alpes (Cerastium alpinum) est une plante vivace gazonnante, laineuse, à tiges ascendantes et à grandes fleurs blanches groupées en petites cymes. Elle se développe sur les rochers et pelouses rocailleuses des montagnes siliceuses à l’étage alpin, dans les végétations saxicoles des éboulis et falaises froides et humides ainsi que dans les landes ouvertes. Sur liste rouge, cette espèce est considérée comme quasi-menacée (NT) au niveau régional.
+PARA[0113]: Statuts réglementaires des espèces floristiques
+PARA[0114]: Les inventaires réalisés au sein de la zone d’étude ont mis en évidence la présence de plusieurs espèces floristiques protégées ou réglementées :
+PARA[0115]: Plusieurs orchidées ont été contactées au sein de la zone d’étude : la Céphalanthère rouge (Cephalanthera rubra), l’Orchis tacheté (Dactylorhiza maculata), le Dactylorhize alpestre (Dactylorhiza majalis), le Dactylorhize à feuilles larges (Dactylorhiza sambucina), l’Épipactis à larges feuilles (Epipactis helleborine), la Néottie nid d’oiseau (Neottia nidus-avis) et l’Orchis vert (Platanthera chlorantha). Ces espèces sont inscrites à l’annexe B du règlement (CE) n° 338/97, transposant la convention CITES dans l’Union européenne, qui encadre leur commerce international et européen afin d’éviter leur exploitation non durable.
+PARA[0116]: Le Lis orangé (Lilium bulbiferum var. croceum), l’Œillet velu armoirie (Dianthus armeria), l’Œillet des Chartreux (Dianthus carthusianorum), l’Œillet couché (Dianthus deltoides) et l’Œillet de Montpellier (Dianthus hyssopifolius) sont réglementés en Isère car elles sont concernées par l’article 2 de l’arrêté préfectoral n° 2010-06151 (PV382). Pour ces taxons, la réglementation interdit toute cueillette, récolte, ramassage ou cession, gratuite ou onéreuse, de spécimens sauvages, qu’il s’agisse de parties aériennes ou souterraines.
+PARA[0117]: Le Genépi blanc (Artemisia umbelliformis), inventorié sur la zone d’étude, relève des articles 3 et 5 du même arrêté préfectoral (PV385, PV383). La réglementation limite la cueillette à de très faibles quantités (une poignée par personne adulte), interdit l’arrachage des parties souterraines et encadre toute commercialisation.
+PARA[0118]: Les espèces du genre Vaccinium, soit la Myrtille (Vaccinium myrtillus), l’Airelle des marais (Vaccinium uliginosum) et l’Airelle rouge (Vaccinium vitis-idaea), sont soumises aux articles 4 et 5 de l’arrêté préfectoral n° 2010-06151 (PV385, PV384). Leur cueillette est tolérée uniquement pour un usage dans la limite d’un kilogramme par personne et par jour.
+PARA[0119]: La cartographie ci-dessous précise la localisation des espèces floristiques patrimoniales contactées au sein de la zone d’étude (données de 2024 et du 11/06/2025) :
+PARA[0120]: 
+PARA[0121]: 
+PARA[0122]: 
+PARA[0123]: 
+PARA[0124]: 
+PARA[0125]: Figure 15 : Localisation des stations de fleurs patrimoniales
+PARA[0126]: 
+PARA[0127]: Espèces végétales exotiques envahissantes
+PARA[0128]: L’inventaire écologique réalisé a mis en évidence la présence d’une seule espèce végétale exotique envahissante au sein de la zone d’étude : la Véronique de Perse (Veronica persica). Cette espèce a été contactée sur les bermes de bord de route dans la partie aval de la zone d’étude.
+PARA[0129]: Cette espèce est associée à un index de 1 sur la cotation de Lavergne de la liste actualisée et hiérarchisée des espèces exotiques envahissantes en Rhône-Alpes. Bien que non indigène, la Véronique de Perse ne semble pas démontrer une capacité significative de prolifération ou de perturbation des écosystèmes environnants sur le site​​. En raison de son positionnement uniquement en zone perturbée (bermes de routes) et de sa faible capacité de colonisation dans ces milieux montagnards, elle ne pose pas de risque majeur pour les espèces végétales autochtones ni pour les habitats naturels à proximité.
+PARA[0130]: L'isolement du vallon, situé dans un secteur zone montagne, joue un rôle clé dans l'absence d'espèces végétales exotiques envahissantes. Cet isolement géographique réduit les voies d'introduction des espèces allochtones, souvent propagées par l'activité humaine, comme le transport ou l'agriculture. De plus, la faible accessibilité des milieux et l'absence de perturbations anthropiques majeures limitent les opportunités pour ces espèces de s'établir. De L'absence d'espèces végétales exotiques envahissantes dans la zone d’étude s'explique aussi par des conditions écologiques rigoureuses.
+PARA[0131]: 
+PARA[0132]: 
+PARA[0133]: Analyse des enjeux faunistiques
+PARA[0134]: Le pré-diagnostic écologique favorise une approche globale de l'emprise du site d'étude. La liste des espèces faunistiques ne saurait être considérée comme exhaustive.
+PARA[0135]: Au regard des habitats en présence, les espèces faunistiques à enjeu observées et celles potentiellement présentes sur le site étudié, ont été renseignées.
+PARA[0136]: Enjeux liés aux mammifères terrestres
+PARA[0137]: Présentation des cortèges mammalogiques
+PARA[0138]: 2 espèces de mammifères ont été détectées sur la zone d’étude par l’observation directe d’individus ou d’indices de présence. Aussi, au regard des données bibliographiques disponibles, croisées à l'intérêt fonctionnel du site d’étude pour le cycle biologique des mammifères, 3 espèces sont potentiellement présentes.
+PARA[0139]: Le tableau suivant présente les statuts de protection (européens et nationaux), les statuts de conservation (nationaux et régionaux), les enjeux (régionaux et à l’échelle de la zone d’étude) et les habitats préférentiels des espèces recensées et potentielles.
+PARA[0140]: 
+PARA[0141]: 
+PARA[0142]: Tableau 10 : Statuts et enjeux des mammifères terrestres recensés et pressentis
+PARA[0143]: Légende :
+PARA[0144]: *Art 2 : protection de l’espèce et de son habitat ;
+PARA[0145]: 1CR : en danger critique, EN : en danger, VU : vulnérable, NT : quasi menacée, LC : préoccupation mineure, DD : données insuffisantes, NA : non applicable, NE : non évaluée
+PARA[0146]: Parmi l’ensemble des espèces recensées ou pressenties, une espèce potentiellement présente sur la zone d’étude est protégée à l’échelle nationale (protection de l’individu et de son habitat) :
+PARA[0147]: le Castor d’Eurasie (castor fiber) est considéré comme espèce potentielle, pour la réalisation de tout ou partie de son cycle biologique. Cette espèce se retrouve sur les abords de cours d’eau lents ou rapides pourvus d’une ripisylve de feuillus (Saules, Peupliers, Aulnes…). Bien qu’aucune trace de présence n’ait été trouvée lors du passage naturaliste, les rives du lit du Buech étant changeantes d’une année à l’autre, il est pressenti aux abords de la zone d’étude.
+PARA[0148]: D’autres espèces non protégées sont également susceptibles de fréquenter la zone d’étude : Blaireau, et Lièvre d’Europe.
+PARA[0149]: Globalement, les espèces recensées ou pressenties sont plutôt communes, non menacées et à enjeu de conservation faible à l’échelle régionale et locale.
+PARA[0150]: Fonctionnalité de la zone d’étude pour les mammifères terrestres
+PARA[0151]: Les habitats ouverts et semi-ouverts (clairière, friches, haies et ronciers) et fermés (accrus de feuillus mésophiles et boisements de ripisylve), présents au sein de la zone d’étude, sont favorables à l’accomplissement de tout ou partie du cycle biologique des espèces observées et pressenties (alimentation, gîte et reproduction). Les boisements rivulaires sont notamment favorables au Castor d’Eurasie pour son nourrissage.
+PARA[0152]: Synthèse des enjeux mammifères terrestres
+PARA[0153]: Mammifères à enjeu de conservation local
+PARA[0154]: Les 2 espèces observées et les 3 espèces pressenties, présentent un enjeu local de conservation faible.
+PARA[0155]: Mammifères protégés – enjeu réglementaire
+PARA[0156]: Aucune des 2 espèces observées n’est protégée à l’échelle nationale.
+PARA[0157]: Le Castor d’Eurasie est une espèce protégée à l’échelle nationale (protection de l’espèce et de son habitat), d’après l’arrêté du 23 avril 2007 (publié au J.O. du 10 mai 2007) qui fixe la liste des mammifères protégés sur l’ensemble du territoire et les modalités de leur protection. Ce texte a été modifié par l’arrêté du 15 septembre 2012 (publié au J.O. du 6 octobre 2012).
+PARA[0158]: 
+PARA[0159]: 
+PARA[0160]: Figure 16 : Niveau d’enjeu associé aux habitats favorables aux espèces de mammifères terrestres observées sur le site
+PARA[0161]: 
+PARA[0162]: Figure 17 : Niveau d’enjeu associé aux habitats favorables aux espèces de mammifères terrestres pressenties sur le site
+PARA[0163]: 
+PARA[0164]: Enjeux liés aux chiroptères (chauves-souris)
+PARA[0165]: Présentation des cortèges des chiroptères
+PARA[0166]: L'étude des chiroptères, par l’analyse des ressources bibliographiques, a permis de dresser une liste des espèces susceptibles d’utiliser la zone d’étude comme site de transit ou de chasse. Seul un inventaire poussé, réalisé lors de prospections nocturnes par de l’écoute active ou passive des chiroptères, permettrait de dresser une liste exhaustive des espèces présentes. Sans cela, il n’est pas possible d’identifier les enjeux réels associés à ce groupe.
+PARA[0167]: Le tableau suivant présente les statuts de protection (européens et nationaux), les statuts de conservation (nationaux et régionaux), les enjeux (régionaux et à l’échelle de la zone d’étude) et les habitats préférentiels de déplacement des espèces pressenties.
+PARA[0168]: Tableau 11 : Statuts et enjeux des chiroptères pressentis
+PARA[0169]: 
+PARA[0170]: 
+PARA[0171]: Fonctionnalité de la zone d’étude pour les chiroptères
+PARA[0172]: Au moins 2 arbres gîtes potentiels favorables à l’accueil des chauves-souris arboricoles ont été identifiés sur la zone d’étude (l’un présentant des cavités et l’autre de l’écorce décollée). Ces enjeux sont extensibles à la zone de boisement dans son ensemble, d’autres arbres moins gros mais présentant peut-être des gîtes difficiles à observer étant proches de ceux-ci.
+PARA[0173]: La toiture et les interstices extérieurs des bâtiments abandonnés à proximité constituent également des abris potentiellement favorables aux chiroptères.
+PARA[0174]: Ainsi, l’espace boisé et le bâtiment abandonné présentent un intérêt fonctionnel fort.
+PARA[0175]: La zone d’étude est majoritairement composée de milieux de culture entourés de friches, de petits boisements rivulaires et de zones rudérales servant de dépôt agricole. Ces habitats constituent à minima des axes de chasse et de déplacement/transit privilégiés pour les chauves-souris. Plusieurs bâtiments sont également présents à proximité et constituent des gîtes potentiels.
+PARA[0176]: Synthèse des enjeux chiroptérologiques
+PARA[0177]: Chiroptères à enjeu de conservation local
+PARA[0178]: Aucune espèce n’a été observée sur la zone d’étude lors de la prospection de pré-diagnostic.
+PARA[0179]: Les 5 espèces pressenties (pour le transit/chasse) présentent un enjeu local de conservation allant de faible à modéré.
+PARA[0180]: 4 espèces présentent un enjeu faible, 1 présente un enjeu modéré (la Pipistrelle commune, classée NT sur les listes rouges nationales).
+PARA[0181]: 
+PARA[0182]: Chiroptères protégés – enjeu réglementaire
+PARA[0183]: Toutes les espèces de chauves-souris sont protégées (protection de l'individu et de son habitat), d’après l’arrêté du 23 avril 2007, publié au J.O. du 10 mai 2007, qui fixe la liste des mammifères terrestres protégés sur l'ensemble du territoire et les modalités de leur protection. Ce texte a été modifié par l’arrêté du 15 septembre 2012 (publié au J.O. du 6 octobre 2012).
+PARA[0184]: Toutes les espèces de chiroptères sont inscrites à l’annexe IV de la Directive Habitats. 
+Le Grand Rhinolophe et le Petit Rhinolophe sont également inscrits à l’annexe II de cette même directive.
+PARA[0185]: 
+PARA[0186]: 
+PARA[0187]: Figure 18 : Niveau d’enjeu associé aux habitats favorables au déplacement et à la chasse des chiroptères pressentis, et gîtes observés sur le site
+PARA[0188]: 
+PARA[0189]: Enjeux liés aux oiseaux
+PARA[0190]: Présentation des cortèges avifaunistiques
+PARA[0191]: 21 espèces d’oiseaux ont été recensées sur la zone d’étude et sa périphérie proche, par écoute des chants et observations directes.
+PARA[0192]: Le tableau suivant présente les statuts de protection (européens et nationaux), les statuts de conservation (nationaux et régionaux) et les enjeux (régionaux et à l’échelle de la zone d’étude) des espèces recensées et pressenties. Pour les espèces nicheuses (certaines, probables et pressenties) sur la zone d’étude, les typologies d’habitats de reproduction préférentiels sont précisées.
+PARA[0193]: 
+PARA[0194]: Tableau 12 : Statuts et enjeux des oiseaux recensés et pressentis
+PARA[0195]: 
+PARA[0196]: 
+PARA[0197]: 
+PARA[0198]: Légende :
+PARA[0199]: * An.I : espèce protégée (individus/œufs/nids) / An.II : espèce chassable / An.III : espèce commercialisable sous conditions
+PARA[0200]: ** Art 2 : protection de l’espèce et de son habitat / Art 3 : protection de l’espèce uniquement (cf. listes nationales des espèces protégées)
+PARA[0201]: 1CR : en danger critique, EN : en danger, VU : vulnérable, NT : quasi menacée, LC : préoccupation mineure, DD : données insuffisantes, NA : non applicable, NE : non évaluée
+PARA[0202]: Parmi les 21 espèces d’oiseaux recensées sur le site d’étude, 19 sont protégées à l’échelle nationale, dont 17 nicheuses certaines ou probables (protection de l'individu et de son habitat).
+PARA[0203]: D’une manière générale, les espèces recensées sont plutôt communes, non menacées et à enjeu de conservation faible à l’échelle régionale et locale. 4 espèces potentiellement reproductrices présentent un enjeu de conservation supérieur à faible à l’échelle locale pour la reproduction :
+PARA[0204]: le Pouillot véloce (Phylloscopus collybita) est inféodé aux milieux forestiers. Ses effectifs en région PACA sont en constante diminution. Au moins un couple fréquente le boisement. Son enjeu est modéré.
+PARA[0205]: le Rossignol philomèle (Luscinia megarhynchos) est une espèce qui fréquente les habitats fermés à semi-ouverts. Un mâle chanteur a été noté dans le boisement rivulaire. Son enjeu est modéré.
+PARA[0206]: le Serin cini (Serinus serinus) fréquente les boisements et les jardins arborés. Plusieurs mâles chanteurs ont été notés sur et à proximité du site. Son enjeu est modéré.
+PARA[0207]: le Petit Gravelot (Charadrius dubius) dépend des berges et bancs de galets pour effectuer sa reproduction. Plusieurs individus sont présents sur les bancs du Buëch, aux abords directs du site d’étude. Son enjeu est assez fort.
+PARA[0208]: 
+PARA[0209]: Au regard des données bibliographiques disponibles (Silène 2025) croisées à l'intérêt fonctionnel du site d’étude pour le cycle biologique des oiseaux, 14 espèces avec un enjeu local de conservation (allant de faible à assez fort) et/ou protégées à l’échelle nationale (protection de l’individu et de son habitat) sont susceptibles de fréquenter la zone d’étude (espèces pressenties), pour la reproduction :
+PARA[0210]: la Balbuzard pêcheur (pandion haliaetus), affectionne les habitats humides et rivulaires pour sa chasse. Sa rareté en France en fait une espèce à enjeu particulièrement marqué (enjeu migratoire modéré),
+PARA[0211]: la Tourterelle des bois (Streptopelia turtur), se retrouve dans les habitats forestiers de feuillus et les bosquets de plaine à sous-bois fourni (enjeu assez fort),
+PARA[0212]: l’Alouette lulu (Lullula arborea), occupe les milieux ouverts à semi-ouverts, naturels ou incultes, sur sol bien drainé à couverture herbacée basse et éparse (enjeu modéré),
+PARA[0213]: le Verdier d'Europe (Chloris chloris), est un oiseau des milieux arborés ouverts, feuillus ou mixtes (enjeu assez fort),
+PARA[0214]: le Circaète Jean-le-Blanc (Circaetus gallicus), est un rapace diurne inféodé aux lisières et milieux ouverts à semi-ouverts pour sa chasse (reptiles). Il nécessite cependant un environnement calme et hautement boisé pour sa nidification (enjeu modéré).
+PARA[0215]: le Tarin des Aulnes (Spinus spinus), se rencontre en milieux arborés ou arbustifs, en groupes familiaux pouvant compter plusieurs dizaines de couples (enjeu faible),
+PARA[0216]: le Gros-bec cassenoyaux (Coccothraustes coccothraustes), est un oiseau très discret malgré sa grande taille. Il vit et se reproduit en boisements de feuillus hauts (enjeu faible).
+PARA[0217]: le Milan noir (Milvus migrans), niche en haut de grands feuillus (enjeu faible),
+PARA[0218]: le Rougequeue à front blanc (Phoenicurus phoenicurus), inféodé aux habitats forestiers et rupestres, s’adapte au milieu bâti humain (enjeu faible).
+PARA[0219]: la Mésange bleue (Cyanistes caeruleus), occupe toutes sortes de milieux arborés et arbustifs (enjeu faible).
+PARA[0220]: le Pinson des arbres (Fringilla coelebs), occupe tout type de milieux arboré (enjeu faible).
+PARA[0221]: le Roitelet à triple bandeau (Regulus ignicapilla), est inféodé aux milieux boisés. Discret, il a tendance à rester à la cime des arbres qu’il fréquente, préférentiellement des conifères (enjeu faible).
+PARA[0222]: la Mésange nonnette (Poecile palustris), inféodée aux milieux boisés à tendance fraiche et humide, fréquente également les lisières et bords de cours d’eau (enjeu faible).
+PARA[0223]: l’Epervier d’Europe (Accipiter nisus), rapace chassant en milieu boisé, apprécie les accrus denses où surprendre ses proies (enjeu faible).
+PARA[0224]: 
+PARA[0225]: Fonctionnalité de la zone d’étude pour l’avifaune
+PARA[0226]: Bien que majoritairement composé d’une culture de blé, le site présente des abords arborés et enfrichés servant d’habitat à de nombreuses espèces d’oiseaux. Le boisement de ripisylve haut et parfois dense au niveau de la strate arbustive abrite Loriot d’Europe, Huppe fasciée, Torcol fourmilier, Rossignol philomèle ainsi que le cortège forestier commun. La proximité du site avec le Buëch amène la présence en limite de site du Petit gravelot (enjeu assez fort). Les habitats semi-ouverts enfrichés sur sa partie nord sont favorables à un cortège d’oiseaux de friches et buissons tels que plusieurs espèces de fauvettes, bruants, pouillots etc.
+PARA[0227]: 
+PARA[0228]: Cordon de boisements favorable à l’avifaune, situé entre la culture et le Buëch
+PARA[0229]: La zone d’étude présente une mosaïque d’habitats ouverts et fermés (boisement, bosquet, lisières, friches et prairies) favorables à l’accomplissement de tout ou partie du cycle biologique des espèces avifaunistiques recensées. Les habitats fermés et semi-ouverts seront principalement utilisés pour la reproduction et l’alimentation, les habitats ouverts pour l’alimentation et le déplacement des individus.
+PARA[0230]: Tableau 13 : Espèces avifaunistiques avec un enjeu de conservation significatif
+PARA[0231]: Légende :
+An.I : espèce protégée (individus/œufs/nids) /An.II : espèce chassable
+PARA[0232]: Art. 2 : protection de l’espèce et de son habitat / Art. 3 : protection de l’espèce uniquement (cf. listes nationales des espèces protégées)
+PARA[0233]: 1CR : en danger critique, EN : en danger, VU : vulnérable, NT : quasi menacée, LC : préoccupation mineure, DD : données insuffisantes, NA : non applicable, NE : non évaluée
+PARA[0234]: 
+PARA[0235]: Synthèse des enjeux avifaunistiques
+PARA[0236]: Oiseaux à enjeu de conservation local
+PARA[0237]: 21 espèces d’oiseaux ont été recensées au sein de la zone d’étude, dont 18 nicheuses probables. Une espèce présente un enjeu de conservation local assez fort, le Petit Gravelot. Trois espèces présentent un enjeu de conservation local modéré : le Pouillot véloce, le Rossignol philomèle et le Serin cini.
+PARA[0238]: Parmi les 14 espèces nicheuses pressenties (données Silène 2025), 9 présentent un enjeu de conservation faible, 3 présentent un enjeu local de conservation modéré : le Balbuzard pêcheur, l’Alouette lulu et le Circaète Jean-le-Blanc. 2 espèces présentent un enjeu local de conservation assez fort : la Tourterelle des bois et le Verdier d'Europe.
+PARA[0239]: Oiseaux protégés – enjeu réglementaire
+PARA[0240]: 18 espèces nicheuses certaines ou probables et les 2 espèces non-nicheuses observées au droit de la zone d’étude sont protégées à l’échelle nationale, tout comme les 14 espèces nicheuses pressenties (Art. 3 : protection de l’espèce et de son habitat), d’après l’arrêté du 29 octobre 2009 fixant la liste des oiseaux protégés sur l’ensemble du territoire et les modalités de leur protection (publié au J.O. du 5 décembre 2009). Ce texte a été modifié par l’arrêté du 21 juillet 2015 (publié au J.O. du 28 juillet 2015).
+PARA[0241]: 
+PARA[0242]: 
+PARA[0243]: Figure 19 : Avifaune avérée et niveau d’enjeu associé aux habitats favorables aux espèces d’oiseaux observées sur le site
+PARA[0244]: 
+PARA[0245]: Figure 20 : Niveau d’enjeu associé aux habitats favorables aux espèces d’oiseaux pressenties sur le site
+PARA[0246]: 
+PARA[0247]: Enjeux liés aux amphibiens
+PARA[0248]: Présentation des cortèges amphibiens
+PARA[0249]: Deux espèces d’amphibiens assez communes ont été observées sur la zone d’étude.
+PARA[0250]: Le tableau suivant présente les statuts de protection (européens et nationaux), les statuts de conservation (nationaux et régionaux), les enjeux (régionaux et à l’échelle de la zone d’étude) et les habitats préférentiels des espèces recensées et pressenties.
+PARA[0251]: 
+PARA[0252]: Tableau 14 : Statuts et enjeux des amphibiens recensés et pressenties
+PARA[0253]: Légende :
+PARA[0254]: *An.II : espèce d'intérêt communautaire / An.IV : protection stricte sur l'ensemble du territoire européen / An.V : prélèvement et exploitation soumis à mesures de gestion
+PARA[0255]: **Art 2 : protection de l’espèce et de son habitat /Art3 : protection des individus
+PARA[0256]: 1CR : en danger critique, EN : en danger, VU : vulnérable, NT : quasi menacée, LC : préoccupation mineure, DD : données insuffisantes, NA : non applicable, NE : non évaluée.
+PARA[0257]: Deux espèces ont été observées au sein de la zone d’étude : la Grenouille rieuse (Pelophylax ridibundus) ainsi que des Grenouilles vertes sp (Pelophylax sp.), espèces communes, protégées au niveau national dont l’enjeu de conservation local est faible.
+PARA[0258]: Au regard des données bibliographiques disponibles (Silène, 2025) croisées à l'intérêt fonctionnel du site d’étude pour le cycle biologique des amphibiens, 2 espèces avec un enjeu local de conservation faible et protégées à l’échelle nationale (protection de l’individu ou de l’individu et de son habitat), sont susceptibles de fréquenter la zone d’étude (espèces pressenties), notamment pour l’alimentation et le déplacement voire pour la reproduction :
+PARA[0259]: l’Alyte accoucheur (Alytes obstetricans) se retrouve en zones arborées, arbustives ou rudérales (enjeu faible),
+PARA[0260]: le Crapaud commun (Bufo bufo) se retrouve dans tous types de points d’eau stagnante ou à courant lent (enjeu faible).
+PARA[0261]: 
+PARA[0262]: Un ru asséché, pouvant former des vasques par temps humide, est présent en bordure sud du site. Il pourrait être favorable à l’accueil de ces espèces d’amphibiens.
+PARA[0263]: Fonctionnalité de la zone d’étude pour les amphibiens
+PARA[0264]: La zone d’étude est globalement peu favorable au transit et à la reproduction des amphibiens. Les abords du Buëch sont abrupts et régulièrement érodés par les crues, ils ne présentent aucune zone d’eau calme favorable à la reproduction sur la berge concernée.
+PARA[0265]: Deux espèces d’amphibiens (le Crapaud commun/épineux et l’Alyte accoucheur) ont été recensées sur la commune de Garde-Colombe proche du secteur d’étude (Silène, 2025). Un point d’eau temporaire potentiel, le Ravin de Combe obscure, pourrait représenter une opportunité de reproduction pour l’alyte à condition que le débit soit faible et que les précipitations soient suffisantes. Au regard des connaissances actuelles, le site d’étude n’apparaît pas comme favorable à ces espèces.
+PARA[0266]: 
+PARA[0267]: La zone d’étude présente des berges mobiles du Buëch ainsi qu’un ruisseau temporaire en limite sud. Ces habitats sont globalement peu favorables au déplacement, au nourrissage et à la reproduction des espèces d’amphibiens citées dans la bibliographie. Les espèces relevées sur site n’effectuent probablement pas leur reproduction dans le périmètre direct. L’accru de feuillus mésophile qui jouxte le Buëch ainsi que les fourrés et bosquets autours des cultures sont potentiellement favorables à la phase terrestre des amphibiens (hivernage notamment).
+PARA[0268]: 
+PARA[0269]: Synthèse des enjeux amphibiens
+PARA[0270]: Amphibiens à enjeu de conservation local
+PARA[0271]: Deux espèces présentant un enjeu local faible, ont été observées sur la zone d’étude : La Grenouille rieuse et la grenouille verte sp.
+PARA[0272]: Les deux espèces potentielles présentent un enjeu de conservation local faible.
+PARA[0273]: Amphibiens protégés – enjeu réglementaire
+PARA[0274]: Toutes les espèces d’amphibiens, avérées et pressenties sont protégées à l’échelle nationale (Art 2 : protection de l’espèce et de son habitat / Art3 : protection des individus), d’après l’arrêté du 8 janvier 2021 fixant la liste des amphibiens et des reptiles représentés sur le territoire métropolitain protégés sur l'ensemble du territoire national et les modalités de leur protection : articles 2, 3 et 4 (publié au J.O. du 11 février 2021).
+PARA[0275]: 
+PARA[0276]: 
+PARA[0277]: 
+PARA[0278]: 
+PARA[0279]: 
+PARA[0280]: Figure 21 : Amphibiens avérés et niveau d’enjeu associé aux habitats favorables aux espèces observées.
+PARA[0281]: 
+PARA[0282]: Figure 22 : Niveau d’enjeu associé aux habitats favorables aux espèces d’amphibiens pressenties sur le site
+PARA[0283]: Enjeux liés aux reptiles
+PARA[0284]: Présentation des cortèges herpétologiques
+PARA[0285]: 4 espèces de reptiles assez communes ont été contactées sur la zone d’étude.
+PARA[0286]: Le tableau suivant présente les statuts de protection (européens et nationaux), les statuts de conservation (nationaux et régionaux), les enjeux (régionaux et à l’échelle de la zone d’étude) et les habitats préférentiels des espèces recensées et pressenties.
+PARA[0287]: 
+PARA[0288]: 
+PARA[0289]: Tableau 15 : Statuts et enjeux des reptiles recensés et pressenties
+PARA[0290]: Légende :
+PARA[0291]: *An.IV : protection stricte sur l'ensemble du territoire européen
+PARA[0292]: **Art 2 : protection de l’espèce et de son habitat
+PARA[0293]: 1CR : en danger critique, EN : en danger, VU : vulnérable, NT : quasi menacée, LC : préoccupation mineure, DD : données insuffisantes, NA : non applicable, NE : non évaluée
+PARA[0294]: Quelques individus de Lézard vert occidental et de Lézard des murailles ont été observés au niveau des chemins, friches et haies qui entourent la zone d’étude. Un individu de Couleuvre verte et jaune a été notée dans les bosquets de bord de culture, ainsi qu’une vipère aspic au niveau des pelouses sèches parsemées de bosquets. Ces quatre espèces sont protégées au niveau national et présentent un enjeu de conservation local faible.
+PARA[0295]: Au regard des données bibliographiques disponibles (Silène, 2025), croisées à l'intérêt fonctionnel du site d’étude pour le cycle biologique des reptiles, 1 espèce protégée à l’échelle nationale (protection de l’individu et de son habitat) et avec un enjeu de conservation faible, est susceptible de fréquenter la zone d’étude (espèce pressentie), notamment pour l’alimentation et le déplacement voire pour la reproduction :
+PARA[0296]: la Couleuvre vipérine (Natrix maura), est une espèce inféodée aux rivières à courant modéré, aux mares, fossés et canaux (enjeu modéré),
+PARA[0297]: 
+PARA[0298]: Fonctionnalité de la zone d’étude pour les reptiles
+PARA[0299]: Les lisières et boisements, les haies, les broussailles et la zone de pelouse sèche représentent des habitats favorables pour l'accomplissement de l’ensemble du cycle biologique du Lézard vert occidental et du Lézard des murailles (espèces observées), de la Couleuvre verte et jaune et Vipère aspic. Le ruisseau et ses abords sont favorables à la Couleuvre vipérine (espèce pressentie). Les dépôts de matériaux divers constituent des hibernaculums pour ce groupe.
+PARA[0300]: Les habitats méso-xérophiles que sont les haies, les fourrés, les lisières, les friches, les murets, les dépôts de matériau et les abords de chemin et de culture sont favorables à l’accomplissement de tout ou partie du cycle biologique de la plupart des reptiles. Le ruisseau et les abords du Buëch peuvent être favorables à l’accomplissement de tout ou partie du cycle biologique des reptiles d’affinités aquatiques (Couleuvre vipérine).
+PARA[0301]: Synthèse des enjeux herpétologiques
+PARA[0302]: Reptiles à enjeu de conservation local
+PARA[0303]: Les 4 espèces qui ont été recensées au droit de la zone d’étude présentent un enjeu de conservation local faible.
+PARA[0304]: L’espèce pressentie présente également un enjeu de conservation local faible.
+PARA[0305]: Toutes ces espèces (observées et pressenties) sont susceptibles de réaliser tout ou partie de leur cycle biologique au sein des habitats présents au droit de la zone d’étude.
+PARA[0306]: Reptiles protégés – enjeu réglementaire
+PARA[0307]: Toutes les espèces de reptiles recensées ou pressenties sont protégées à l’échelle nationale, (Art. 2 : protection de l’espèce et de son habitat) d’après l’arrêté du 8 janvier 2021 fixant la liste des amphibiens et des reptiles représentés sur le territoire métropolitain protégés sur l'ensemble du territoire national et les modalités de leur protection : articles 2 et 3 (publié au J.O. du 11 février 2021).
+PARA[0308]: Le Lézard vert occidental, le lézard des murailles, la Couleuvre verte et jaune sont inscrites à l’annexe IV de la Directive Habitat (protection stricte sur l'ensemble du territoire européen).
+PARA[0309]: 
+PARA[0310]: 
+PARA[0311]: Figure 23 : Reptiles avérés sur site et niveau d’enjeu associé aux habitats favorables aux espèces observées.
+PARA[0312]: 
+PARA[0313]: Figure 24 : Niveau d’enjeu associé aux habitats favorables aux espèces de reptiles pressenties sur le site
+PARA[0314]: 
+PARA[0315]: Enjeux liés aux invertébrés (insectes)
+PARA[0316]: Les conditions météorologiques rencontrées lors de la session de terrain ont été favorables à l’observation de ce groupe, il semblerait cependant, au vu du nombre d’espèces contactées limité, que le traitement appliqué à la culture impacte fortement les milieux naturels et les populations d’invertébrés.
+PARA[0317]: Présentation des cortèges d’invertébrés
+PARA[0318]: 22 espèces d’invertébrés ont été observées sur la zone d’étude, dont 10 rhopalocères, 6 orthoptères et 6 appartenant à d’autres taxons. En plus des espèces observées, 4 espèces protégées ou à enjeu de conservation significatif (supérieur à faible) sont pressenties sur la zone d’étude, dont 3 rhopalocères, et 1 coléoptère.
+PARA[0319]: Le tableau suivant présente les statuts de protection (européens et nationaux), les statuts de conservation (nationaux et régionaux), les enjeux (régionaux et à l’échelle de la zone d’étude) et les habitats préférentiels des espèces recensées et pressenties.
+PARA[0320]: Tableau 16 : Statuts et enjeux des invertébrés recensés et pressenties
+PARA[0321]: Légende :
+PARA[0322]: *An.II : espèces d'intérêt communautaire / An.IV : protection stricte sur l'ensemble du territoire européen
+PARA[0323]: ** Art 2 : protection de l’espèce et de son habitat / Art 3 : protection de des individus (cf. listes nationales des espèces protégées)
+PARA[0324]: 1CR : en danger critique, EN : en danger, VU : vulnérable, NT : quasi menacée, LC : préoccupation mineure, DD : données insuffisantes, NA : non applicable, NE : non évaluée
+PARA[0325]: 
+PARA[0326]: 
+PARA[0327]: 22 espèces ont été observées sur la zone d’étude. Toutes présentent un enjeu de conservation faible au droit de la zone d’étude sauf une présentant un enjeu modéré : la Zygène de la Jarosse (zygaena osterodensis), et aucune n’est protégée, que ce soit à l’échelle nationale ou européenne.
+PARA[0328]: Au regard des données bibliographiques disponibles (Silène, 2025), croisées avec l'intérêt fonctionnel du site d’étude pour le cycle biologique des différents ordres d’invertébrés recherchés, 4 espèces protégées à l’échelle nationale (protection de l’individu et de son habitat) et/ou avec un enjeu de conservation allant de faible à modéré, sont susceptibles de fréquenter la zone d’étude (espèces pressenties), notamment pour la reproduction :
+PARA[0329]: la Zygène cendrée (Zygaena rhadamanthus), se retrouve en prairies xérophiles qui lui proposent sa plante hôte (Dorycnium sp. ou Onobrychis sp.). L’espèce est protégée au niveau national (enjeu faible),
+PARA[0330]: l’Azuré du mélilot (Polyommatus dorylas), apprécie les pelouses et landes sèches fleuries (enjeu faible),
+PARA[0331]: l’Hespérie des cirses (Pyrgus cirsii), est une espèce des pelouses calcaires vivaces, dont la chenille se nourrit de potentilles et l’adulte de cirses et scabieuses (enjeu modéré),
+PARA[0332]: le Grand Capricorne (Cerambys cerdo), se rencontre dans les clairières et les lisières de boisements à chênes, sa larve se développe et se nourri dans le tronc vivant (enjeu faible),
+PARA[0333]: 
+PARA[0334]: Fonctionnalité de la zone d’étude pour les invertébrés
+PARA[0335]: Les habitats ouverts de type prairies, pelouses et friches présents sur le pourtour de la zone d’étude, ainsi que les habitats semi-ouverts comme les lisières forestières sont favorables au développement des espèces recensées et pressenties (notamment l’Hespérie des cirses). L’accru boisé présente quelques Chênes pubescents favorables au Grand capricorne (espèce pressentie). Le ruisseau temporaire et les berges ne présentent pas de milieu humide suffisamment calme et stable pour le développement d’odonates à proximité directe du site.
+PARA[0336]: Les zones de lisière ainsi que la culture de blé présentent des vesces et gesses, plantes-hôtes de la Zygène de la Jarosse, dont un adulte a été observé sur site (enjeu modéré).
+PARA[0337]: Les habitats méso-xérophiles ouverts et semi-ouverts, présents sur et autour de la zone d’étude sont favorables à l’accomplissement de tout ou partie du cycle biologique de la plupart des espèces d’insectes observées ou pressenties. Les habitats fermés et leurs lisières, sont favorables à l’accomplissement de tout ou partie du cycle biologique de quelques espèces observées ou pressenties. Les milieux humides ou en eau, de par leur nature instable, sont peu favorables au développement d’insectes à enjeux.
+PARA[0338]: Synthèse des enjeux des invertébrés
+PARA[0339]: Invertébrés à enjeu de conservation local
+PARA[0340]: L’ensemble des espèces recensées au droit de la zone d’étude, présentent un enjeu de conservation local faible, sauf la Zygène de la Jarosse (Zygaena osterodensis) qui présente un enjeu modéré.
+PARA[0341]: Parmi les 4 espèces pressenties, 3 espèces présente un enjeu de conservation local faible : la Zygène cendrée, l’Azuré du mélilot et le Grand capricorne ; 1 espèces présente un enjeu de conservation modéré : l’Hespérie des cirses.
+PARA[0342]: Insectes protégés – enjeu réglementaire
+PARA[0343]: Aucune espèce recensée n’est protégée et 2 espèces pressenties sont protégées à l’échelle nationale (Art. 2 ou 3 : protection de l’espèce et de son habitat), d’après l’arrêté du 23 avril 2007 fixant les listes des insectes protégés sur l'ensemble du territoire et les modalités de leur protection : article 2 et 3 (publié au J.O. du 6 mai 2007).
+PARA[0344]: Le Grand capricorne est inscrit aux annexes II et IV de la Directive Habitat (protection stricte sur l'ensemble du territoire européen).
+PARA[0345]: 
+PARA[0346]: Figure 25 : Invertébrés avérés sur site et niveau d’enjeu associé aux habitats favorables aux espèces de l’entomofaune observées.
+PARA[0347]: 
+PARA[0348]: Figure 26 : Niveau d’enjeu associé aux habitats favorables aux espèces de l’entomofaune pressenties sur le site
+PARA[0349]: 
+PARA[0350]: Synthèse des enjeux écologiques avérés et potentiels
+PARA[0351]: Enjeux écologiques avérés
+PARA[0352]: Le tableau suivant présente l’évaluation des enjeux écologiques stationnels des habitats de la zone d'étude, par croisement de leur intérêt fonctionnel favorable à l’accomplissement du cycle biologique des espèces à enjeu local de conservation.
+PARA[0353]: Tableau 17 : Synthèse des enjeux écologiques stationnels avérés
+PARA[0354]: 
+PARA[0355]: 
+PARA[0356]: 
+PARA[0357]: Figure 27 : Synthèse des enjeux écologiques stationnels avérés
+PARA[0358]: Enjeux écologiques potentiels
+PARA[0359]: Au regard des potentialités biologiques pressenties, la zone d’étude est potentiellement favorable au développement de plusieurs espèces faunistiques et floristiques protégées et/ou à enjeu. En effet, suite à l'analyse de la bibliographie et de notre interprétation des habitats naturels et semi-naturels, la zone d’étude possède des enjeux écologiques potentiels locaux notables selon les potentialités d’accueil d’espèces de plus fort enjeu de conservation. Le tableau suivant présente l’évaluation des enjeux écologiques stationnels des habitats de la zone d'étude, par croisement de leur intérêt fonctionnel favorable à l’accomplissement du cycle biologique des espèces à enjeu local de conservation.
+PARA[0360]: Tableau 18 : Enjeux écologiques potentiels (flore)
+PARA[0361]: 
+PARA[0362]: Tableau 19 : Enjeux écologiques potentiels (faune)
+PARA[0363]: Légende :
+PARA[0364]: *DH : An.II : espèces d'intérêt communautaire / An.IV : protection stricte sur l'ensemble du territoire européen  
+  DO : An.I : espèce protégée (individus/œufs/nids) / An.II : espèce chassable
+PARA[0365]: ** Art 2 : protection de l’espèce et de son habitat / Art 3 : protection de des individus (cf. listes nationales des espèces protégées)
+PARA[0366]: 1CR : en danger critique, EN : en danger, VU : vulnérable, NT : quasi menacée, LC : préoccupation mineure, DD : données insuffisantes, NA : non applicable, NE : non évaluée
+PARA[0367]: 
+PARA[0368]: Tableau 20 : Enjeux écologiques avérés et potentiels
+PARA[0369]: * PN : Protection nationale PR : Protection régionale. Espèces en noir : présence avérée ; espèces en bleu : potentiellement présentes.
+PARA[0370]: 
+PARA[0371]: Pour rappel, les enjeux écologiques présentés ici constituent une projection cartographique maximisée des enjeux potentiels évalués sur la zone d’étude en cas de présence de tout ou partie des espèces potentielles recensées dans la littérature scientifique. Cette carte ne reflète pas la réalité des niveaux d’enjeux avérés sur la zone d’étude, mais permet de fournir une orientation au Maître d’Ouvrage des impacts prévisibles potentiels de son projet selon la variante dimensionnée retenue. Seuls des inventaires écologiques complémentaires réalisés en période favorable du cycle biologique de développement des espèces permettent d’affiner les niveaux d’enjeux.
+PARA[0372]: 
+PARA[0373]: 
+PARA[0374]: 
+PARA[0375]: Figure 28 : Synthèse des enjeux écologiques potentiels
