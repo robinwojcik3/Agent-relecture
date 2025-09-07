@@ -1,0 +1,200 @@
+        except Exception as e:
+            messagebox.showerror("Erreur", str(e))
+
+    def set_mode(self, key):
+        self.mode = key
+        for k, b in self.mode_buttons.items():
+            if k == key:
+                b.configure(bg="#2e86de", fg="white", activebackground="#1e5aa6")
+            else:
+                b.configure(bg=self.cget("bg"), fg="black", activebackground=self.cget("bg"))
+
+    def choose_output_dir(self):
+        d = filedialog.askdirectory()
+        if not d:
+            return
+        self.output_dir = os.path.abspath(d)
+        os.makedirs(self.output_dir, exist_ok=True)
+        self.out_var.set(self.output_dir)
+
+    def open_output_dir(self):
+        d = self.output_dir or OUTPUT_DIR
+        os.makedirs(d, exist_ok=True)
+        try:
+            os.startfile(d)
+        except Exception as e:
+            messagebox.showerror("Erreur", str(e))
+
+    def _copy_to_input(self, src_path):
+        os.makedirs(INPUT_DIR, exist_ok=True)
+        base = os.path.basename(src_path)
+        name, ext = os.path.splitext(base)
+        candidate = os.path.join(INPUT_DIR, f"{name}_copie_{ts_now()}{ext}")
+        shutil.copy2(src_path, candidate)
+        rel = os.path.relpath(candidate, ROOT).replace("\\", "/")
+        return rel
+
+    def clear_sections_ui(self):
+        for w in list(self.sections_frame.children.values()):
+            w.destroy()
+        self.section_vars.clear()
+        self.sections_count_var.set("0 section sélectionnée")
+
+    def show_sections(self):
+        if not self.copy_relpath:
+            messagebox.showwarning("Manque fichier", "Sélectionnez d’abord un fichier Word.")
+            return
+        if not self.ensure_docx():
+            messagebox.showerror("Dépendances manquantes", "python-docx introuvable. Essayez ‘Installer dépendances…’ ou exécutez:\npython -m pip install python-docx lxml")
+            return
+        self.clear_sections_ui()
+        try:
+            abs_path = os.path.join(ROOT, self.copy_relpath)
+            secs = analyze_sections(abs_path)
+            if not secs:
+                self.log("Aucune table des matières détectée. Bascule vers les styles de titres.")
+                secs = analyze_sections(abs_path)
+            self.sections = secs
+            # Ouvrir la fenêtre modale scrollable pour sélectionner
+            pre = [i for i, v in enumerate(self.section_vars) if v.get()] if self.section_vars else []
+            dlg = SectionsDialog(self, secs, pre)
+            self.wait_window(dlg)
+            if dlg.result is not None:
+                # Recréer les vars selon résultat
+                self.section_vars = []
+                selected = set(dlg.result)
+                for i in range(len(secs)):
+                    self.section_vars.append(tk.BooleanVar(value=(i in selected)))
+                # Afficher un petit résumé (les 6 premiers labels) dans la zone placeholder
+                for w in list(self.sections_frame.children.values()):
+                    w.destroy()
+                summary = [secs[i].label() for i in sorted(selected)][:6]
+                if summary:
+                    for lab in summary:
+                        tk.Label(self.sections_frame, text=f"☑ {lab}", anchor="w").pack(anchor="w")
+                    if len(selected) > 6:
+                        tk.Label(self.sections_frame, text="…", anchor="w").pack(anchor="w")
+                else:
+                    tk.Label(self.sections_frame, text="(document entier)", anchor="w").pack(anchor="w")
+            self.update_sections_count()
+        except Exception as e:
+            messagebox.showerror("Erreur", f"Impossible d’analyser les sections:\n{e}")
+
+    def install_deps(self):
+        ok = self.ensure_docx()
+        if ok:
+            messagebox.showinfo("OK", "Dépendances installées.")
+        else:
+            messagebox.showerror("Erreur", "Impossible d’installer python-docx automatiquement. Installez manuellement:\npython -m pip install python-docx lxml")
+
+    def update_sections_count(self):
+        n = sum(1 for v in self.section_vars if v.get())
+        self.sections_count_var.set(f"{n} section(s) sélectionnée(s)")
+
+    def build_prompt_preview(self, rel_docx: str, selected_labels: list, mode: str) -> str:
+        mode_label = dict(MODES)[mode]
+        checklist = f"modes/{mode}/instructions/checklist.md"
+        refs_dir = f"modes/{mode}/refs"
+        lines = []
+        lines.append(f"Objectif: Relecture ‘{mode_label}’ du document {rel_docx}.")
+        if selected_labels:
+            lines.append("Sections: " + ", ".join(selected_labels))
+        else:
+            lines.append("Sections: document entier")
+        lines.append(f"Checklist: {checklist}")
+        lines.append(f"Références locales: {refs_dir}")
+        return "\n".join(lines)
+
+    def launch_analysis(self):
+        if not self.copy_relpath:
+            messagebox.showwarning("Manque fichier", "Veuillez sélectionner un fichier Word.")
+            return
+        if not self.mode:
+            messagebox.showwarning("Manque mode", "Veuillez sélectionner un mode de relecture.")
+            return
+        if not self.ensure_docx():
+            messagebox.showerror("Dépendances manquantes", "python-docx introuvable. Essayez ‘Installer dépendances…’.")
+            return
+        selected_idx = [i for i, v in enumerate(self.section_vars) if v.get()]
+        if not selected_idx:
+            if not messagebox.askyesno(
+                "Document entier", "Aucune section cochée. Voulez-vous traiter le document entier ?"
+            ):
+                return
+
+        # A — Préparation
+        self.log("Préparation…")
+        ts = ts_now()
+        os.makedirs(WORK_DIR, exist_ok=True)
+        os.makedirs(self.output_dir, exist_ok=True)
+
+        abs_copy = os.path.join(ROOT, self.copy_relpath)
+        base_name = os.path.splitext(os.path.basename(abs_copy))[0]
+        work_copy = os.path.join(WORK_DIR, f"{base_name}_copie_{ts}.docx")
+        shutil.copy2(abs_copy, work_copy)
+
+        session = {
+            "timestamp": datetime.now().isoformat(),
+            "source_docx": self.copy_relpath,
+            "mode": self.mode,
+            "sections": [self.sections[i].label() for i in selected_idx],
+            "output_dir": self.output_dir,
+        }
+        with open(os.path.join(WORK_DIR, "session.json"), "w", encoding="utf-8") as f:
+            json.dump(session, f, ensure_ascii=False, indent=2)
+
+        prompt = self.build_prompt_preview(self.copy_relpath, session["sections"], self.mode)
+        self.prompt_txt.configure(state="normal")
+        self.prompt_txt.delete("1.0", tk.END)
+        self.prompt_txt.insert(tk.END, prompt)
+        self.prompt_txt.configure(state="disabled")
+
+        # B — Découpage par sections
+        try:
+            self.log("Découpage par sections…")
+            cut_docx = filter_paragraphs_by_sections(work_copy, selected_idx, self.sections)
+        except Exception as e:
+            messagebox.showerror("Erreur — Découpage", str(e))
+            return
+
+        # C — Relecture locale
+        try:
+            self.log("Conversion DOCX -> Markdown (travail)…")
+            md_src = docx_to_markdown(cut_docx)
+            self.log("Application de la checklist et génération des commentaires…")
+            revised_md, comments = generate_review(md_src, self.mode)
+            md_path = os.path.join(WORK_DIR, "rapport_revise.md")
+            with open(md_path, "w", encoding="utf-8") as f:
+                f.write(revised_md)
+            csv_path = os.path.join(WORK_DIR, "commentaires.csv")
+            write_comments_csv(comments, csv_path)
+        except Exception as e:
+            messagebox.showerror("Erreur — Relecture", str(e))
+            return
+
+        # D — Livrable final Word
+        try:
+            self.log("Conversion Markdown -> DOCX révisé…")
+            revised_docx = os.path.join(WORK_DIR, "rapport_revise.docx")
+            markdown_to_docx(revised_md, revised_docx)
+
+            self.log("Comparaison et insertion des commentaires…")
+            # Avoid very long filenames which can exceed MAX_PATH in some setups
+            base_short = (base_name[:60]).rstrip(" _-.")
+            out_name = f"{base_short}_AI_suivi+commentaires_{ts_now()}.docx"
+            out_docx = os.path.join(self.output_dir, out_name)
+            run_compare_and_comment(cut_docx, revised_docx, csv_path, out_docx)
+        except subprocess.CalledProcessError as pe:
+            messagebox.showerror("Erreur — Word Compare", f"Échec de la comparaison Word: {pe}")
+            return
+        except Exception as e:
+            messagebox.showerror("Erreur — Livrable", str(e))
+            return
+
+        self.log("Livrable prêt.")
+        self.log(f"Fichier final: {out_docx}")
+        messagebox.showinfo("Terminé", f"Livrable généré:\n{out_docx}")
+
+
+if __name__ == "__main__":
+    App().mainloop()

@@ -327,9 +327,9 @@ def run_compare_and_comment(original_docx: str, revised_docx: str, comments_csv:
     PowerShell/Word is clearly shown to the user instead of only the exit code.
     Also normalizes paths to avoid issues with spaces, accents and '&'.
     """
-    ps1 = os.path.join(ROOT, "tools", "compare_and_comment.ps1")
+    ps1 = os.path.join(os.path.dirname(__file__), "tools/compare_and_comment.ps1")
     if not os.path.exists(ps1):
-        raise RuntimeError("tools/compare_and_comment.ps1 manquant")
+        raise RuntimeError("Le fichier tools/compare_and_comment.ps1 est manquant")
 
     # Ensure output directory exists
     os.makedirs(os.path.dirname(output_docx), exist_ok=True)
@@ -343,62 +343,87 @@ def run_compare_and_comment(original_docx: str, revised_docx: str, comments_csv:
 
     # Quick sanity checks for clearer error messages
     for p, label in [
-        (original_docx, "OriginalDocx"),
-        (revised_docx, "RevisedDocx"),
-        (comments_csv, "CommentsCsv"),
+        (original_docx, "Document original"),
+        (revised_docx, "Document révisé"),
+        (comments_csv, "Fichier CSV des commentaires"),
     ]:
         if not os.path.exists(p):
             raise RuntimeError(f"Fichier introuvable pour {label}: {p}")
 
-    cmd = [
-        "powershell.exe",
-        "-NoLogo",
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        ps1,
-        "-OriginalDocx",
-        original_docx,
-        "-RevisedDocx",
-        revised_docx,
-        "-CommentsCsv",
-        comments_csv,
-        "-OutputDocx",
-        output_docx,
-    ]
+    # Create a temporary file for PowerShell output
+    import tempfile
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.log') as tmp:
+        log_file = tmp.name
+
     try:
-        # Capture raw bytes to avoid UnicodeDecodeError with Windows PowerShell streams
-        subprocess.run(cmd, check=True, capture_output=True, text=False)
+        # Build the PowerShell command with proper encoding
+        cmd = [
+            'powershell.exe',
+            '-NoProfile',
+            '-ExecutionPolicy', 'Bypass',
+            '-NoLogo',
+            '-NonInteractive',
+            '-Command',
+            f'$ErrorActionPreference = "Stop"; ' \
+            f'$OutputEncoding = [System.Text.Encoding]::UTF8; ' \
+            f'try {{ ' \
+            f'    & "{ps1}" -OriginalDocx "{original_docx}" -RevisedDocx "{revised_docx}" -CommentsCsv "{comments_csv}" -OutputDocx "{output_docx}" 2>&1 | ' \
+            f'    Tee-Object -FilePath "{log_file}" -Encoding UTF8 ' \
+            f'}} catch {{ ' \
+            f'    [System.Console]::Error.WriteLine($_.Exception.Message); ' \
+            f'    exit 1 ' \
+            f'}}'
+        ]
+        
+        # Run the command with proper encoding
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            encoding='utf-8',
+            errors='replace'
+        )
+        
+        # Read output in real-time
+        stdout, stderr = process.communicate()
+        
+        # Check for errors
+        if process.returncode != 0:
+            # Read the log file for detailed error
+            try:
+                with open(log_file, 'r', encoding='utf-8', errors='replace') as f:
+                    log_content = f.read()
+                error_msg = f"Erreur lors de la comparaison des documents Word.\n\nDétails :\n{log_content}"
+            except Exception as e:
+                error_msg = f"Erreur lors de la lecture du journal d'erreur : {str(e)}"
+                
+            if not error_msg.strip():
+                error_msg = "Erreur inconnue lors de la comparaison des documents Word."
+                
+            raise RuntimeError(error_msg)
+            
     except subprocess.CalledProcessError as e:
-        # Decode PowerShell output robustly
-        if isinstance(e.stdout, (bytes, bytearray)):
-            try:
-                so = (e.stdout or b"").decode("utf-16le")
-            except Exception:
-                try:
-                    so = (e.stdout or b"").decode("utf-8")
-                except Exception:
-                    so = (e.stdout or b"").decode("cp1252", errors="replace")
-        else:
-            so = e.stdout or ""
-        if isinstance(e.stderr, (bytes, bytearray)):
-            try:
-                se = (e.stderr or b"").decode("utf-16le")
-            except Exception:
-                try:
-                    se = (e.stderr or b"").decode("utf-8")
-                except Exception:
-                    se = (e.stderr or b"").decode("cp1252", errors="replace")
-        else:
-            se = e.stderr or ""
-        details = []
-        if so.strip():
-            details.append("STDOUT:\n" + so.strip())
-        if se.strip():
-            details.append("STDERR:\n" + se.strip())
-        det = ("\n\n".join(details)).strip()
-        raise RuntimeError(f"Word Compare a �%chou� (code {e.returncode}).\n\n{det}".rstrip()) from e
+        # Read the log file for detailed error
+        try:
+            with open(log_file, 'r', encoding='utf-8', errors='replace') as f:
+                log_content = f.read()
+            error_msg = f"Erreur lors de l'exécution de PowerShell :\n{log_content}"
+        except Exception as e:
+            error_msg = f"Erreur lors de la lecture du journal d'erreur : {str(e)}"
+        
+        raise RuntimeError(error_msg) from e
+        
+    except Exception as e:
+        raise RuntimeError(f"Erreur inattendue : {str(e)}") from e
+        
+    finally:
+        # Clean up the temporary log file
+        try:
+            if os.path.exists(log_file):
+                os.unlink(log_file)
+        except Exception:
+            pass
 
 
 # ---------------------- Fenêtre de sélection ----------------------
@@ -813,7 +838,7 @@ class App(tk.Tk):
             base_short = (base_name[:60]).rstrip(" _-.")
             out_name = f"{base_short}_AI_suivi+commentaires_{ts_now()}.docx"
             out_docx = os.path.join(self.output_dir, out_name)
-            run_compare_and_comment(cut_docx, revised_docx, csv_path, out_docx)
+            run_compare_and_comment2(cut_docx, revised_docx, csv_path, out_docx)
         except subprocess.CalledProcessError as pe:
             messagebox.showerror("Erreur — Word Compare", f"Échec de la comparaison Word: {pe}")
             return
@@ -824,6 +849,90 @@ class App(tk.Tk):
         self.log("Livrable prêt.")
         self.log(f"Fichier final: {out_docx}")
         messagebox.showinfo("Terminé", f"Livrable généré:\n{out_docx}")
+
+
+def run_compare_and_comment2(original_docx: str, revised_docx: str, comments_csv: str, output_docx: str):
+    """Improved runner that preserves detailed PowerShell/Word errors."""
+    import tempfile
+    ps1 = os.path.join(os.path.dirname(__file__), "tools/compare_and_comment.ps1")
+    if not os.path.exists(ps1):
+        raise RuntimeError("Le fichier tools/compare_and_comment.ps1 est manquant")
+
+    # Ensure output directory exists
+    out_dir = os.path.dirname(output_docx)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+
+    # Normalize to absolute paths
+    ps1 = os.path.normpath(os.path.abspath(ps1))
+    original_docx = os.path.normpath(os.path.abspath(original_docx))
+    revised_docx = os.path.normpath(os.path.abspath(revised_docx))
+    comments_csv = os.path.normpath(os.path.abspath(comments_csv))
+    output_docx = os.path.normpath(os.path.abspath(output_docx))
+
+    # Pre-checks
+    for p, label in [
+        (original_docx, "Document original"),
+        (revised_docx, "Document révisé"),
+        (comments_csv, "Fichier CSV des commentaires"),
+    ]:
+        if not os.path.exists(p):
+            raise RuntimeError(f"Fichier introuvable pour {label}: {p}")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".log") as tmp:
+        log_file = tmp.name
+
+    try:
+        pwsh_cmd = (
+            f'$ErrorActionPreference = "Stop"; '
+            f'$OutputEncoding = [System.Text.Encoding]::UTF8; '
+            f'try {{ '
+            f'  & "{ps1}" -OriginalDocx "{original_docx}" -RevisedDocx "{revised_docx}" -CommentsCsv "{comments_csv}" -OutputDocx "{output_docx}" 2>&1 '
+            f'  | Tee-Object -FilePath "{log_file}" '
+            f'}} catch {{ '
+            f'  $m = ($_.Exception | Out-String); if ([string]::IsNullOrWhiteSpace($m)) {{ $m = ($_ | Out-String) }} '
+            f'  [System.Console]::Error.WriteLine($m); exit 1 '
+            f'}}'
+        )
+
+        result = subprocess.run(
+            [
+                'powershell.exe',
+                '-NoProfile',
+                '-ExecutionPolicy', 'Bypass',
+                '-NoLogo',
+                '-NonInteractive',
+                '-Command', pwsh_cmd,
+            ],
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace',
+        )
+
+        if result.returncode != 0:
+            detail = ''
+            # Try multiple encodings since Windows PowerShell 5.1 may write UTF-16
+            for enc in ('utf-8', 'utf-16', 'cp1252'):
+                try:
+                    with open(log_file, 'r', encoding=enc, errors='replace') as f:
+                        t = (f.read() or '').strip()
+                    if t:
+                        detail = t
+                        break
+                except Exception:
+                    continue
+            if not detail:
+                detail = (result.stderr or result.stdout or '').strip()
+            if not detail:
+                detail = 'Aucune sortie d’erreur disponible.'
+            raise RuntimeError("Erreur lors de la comparaison des documents Word.\n\nDétails :\n" + detail)
+    finally:
+        try:
+            if os.path.exists(log_file):
+                os.unlink(log_file)
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":

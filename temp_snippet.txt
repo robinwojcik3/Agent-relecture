@@ -1,0 +1,60 @@
+
+
+def run_compare_and_comment(original_docx: str, revised_docx: str, comments_csv: str, output_docx: str):
+    """Run the PowerShell compare script and surface detailed errors.
+
+    Uses -NoProfile and captures stdout/stderr so that any failure inside
+    PowerShell/Word is clearly shown to the user instead of only the exit code.
+    Also normalizes paths to avoid issues with spaces, accents and '&'.
+    """
+    ps1 = os.path.join(os.path.dirname(__file__), "tools/compare_and_comment.ps1")
+    if not os.path.exists(ps1):
+        raise RuntimeError("Le fichier tools/compare_and_comment.ps1 est manquant")
+
+    # Ensure output directory exists
+    os.makedirs(os.path.dirname(output_docx), exist_ok=True)
+
+    # Normalize to absolute paths
+    ps1 = os.path.normpath(os.path.abspath(ps1))
+    original_docx = os.path.normpath(os.path.abspath(original_docx))
+    revised_docx = os.path.normpath(os.path.abspath(revised_docx))
+    comments_csv = os.path.normpath(os.path.abspath(comments_csv))
+    output_docx = os.path.normpath(os.path.abspath(output_docx))
+
+    # Quick sanity checks for clearer error messages
+    for p, label in [
+        (original_docx, "Document original"),
+        (revised_docx, "Document révisé"),
+        (comments_csv, "Fichier CSV des commentaires"),
+    ]:
+        if not os.path.exists(p):
+            raise RuntimeError(f"Fichier introuvable pour {label}: {p}")
+
+    # Create a temporary file for PowerShell output
+    import tempfile
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.log') as tmp:
+        log_file = tmp.name
+
+    try:
+        # Build the PowerShell command with proper encoding
+        cmd = [
+            'powershell.exe',
+            '-NoProfile',
+            '-ExecutionPolicy', 'Bypass',
+            '-NoLogo',
+            '-NonInteractive',
+            '-Command',
+            f'$ErrorActionPreference = "Stop"; ' \
+            f'$OutputEncoding = [System.Text.Encoding]::UTF8; ' \
+            f'try {{ ' \
+            f'    & "{ps1}" -OriginalDocx "{original_docx}" -RevisedDocx "{revised_docx}" -CommentsCsv "{comments_csv}" -OutputDocx "{output_docx}" 2>&1 | ' \
+            f'    Tee-Object -FilePath "{log_file}" -Encoding UTF8 ' \
+            f'}} catch {{ ' \
+            f'    [System.Console]::Error.WriteLine($_.Exception.Message); ' \
+            f'    exit 1 ' \
+            f'}}'
+        ]
+        
+        # Run the command with proper encoding
+        process = subprocess.Popen(
+            cmd,
