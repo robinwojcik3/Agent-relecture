@@ -705,7 +705,7 @@ def _build_prompt_preview(self, rel_docx: str, selected_labels: list, mode: str)
             f"L’analyse doit couvrir l’intégralité du contenu de cette copie découpée, qui ne contient que les sections "
             f"sélectionnées par l’utilisateur.\n\n"
 
-            f"Périmètre méthodologique. Le module de relecture à appliquer est : {mode_nom} (offre, diagnostic, impacts, ou mesures). "
+            f"Périmètre méthodologique. Le module de relecture à appliquer est : {mode_nom}. "
             f"Tu t’appuies sur la checklist correspondante située ici : {chemin_checklist}. Lorsque pertinent, tu peux consulter les documents "
             f"de référence du mode dans : {chemin_refs}. Tu justifies chaque remarque par des éléments du texte, et tu maintiens une cohérence stricte "
             f"avec la structure fournie par la copie découpée.\n\n"
