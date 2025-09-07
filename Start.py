@@ -737,13 +737,13 @@ def _choose_source_new(self):
     self.sections, self.section_vars = [], []
     for w in list(self.sections_frame.children.values()):
         w.destroy()
-    self.sections_count_var.set("0 section sǸlectionnǸe")
-    self.log("Fichier source sǸlectionnǸ. Aucune copie crǸǸe.")
+    self.sections_count_var.set("0 section sélectioné")
+    self.log("Fichier source sélectioné. Aucune copie créé.")
 
 def _show_sections_new(self):
     # Analyse directe du fichier original (lecture seule)
     if not self.source_path:
-        messagebox.showwarning("Info", "SǸlectionnez un fichier.")
+        messagebox.showwarning("Info", "Sélectionez un fichier.")
         return
     try:
         self.sections = analyze_sections(self.source_path)
@@ -769,7 +769,7 @@ def _show_sections_new(self):
 def _launch_prep_only_v3(self):
     # L'unique opération de fichier dans input a lieu ici : création de la copie découpée
     if not self.source_path or not self.mode:
-        messagebox.showwarning("Info", "SǸlectionnez un fichier ET un mode.")
+        messagebox.showwarning("Info", "Sélectionnez un fichier ET un mode.")
         return
     selected_idx = [i for i, v in enumerate(self.section_vars) if v.get()]
     if not selected_idx and not messagebox.askyesno("Document entier", "Traiter le document entier ?"):
