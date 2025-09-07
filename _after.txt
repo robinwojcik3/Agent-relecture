@@ -274,58 +274,6 @@ def write_comments_csv(rows, path: str):
             if r.get("ancre_textuelle"):
                 w.writerow({k: str(r.get(k, "")) for k in fieldnames})
 
-def run_compare_and_comment_ps(original_docx: str, revised_docx: str, comments_csv: str, output_docx: str):
-    """Exécute tools/compare_and_comment.ps1 pour comparer et insérer des commentaires.
-
-    Utilise Word via COM (PowerShell) car python-docx ne gère pas l'ajout de
-    commentaires. Capture un journal pour afficher un message d'erreur utile.
-    """
-    import subprocess, tempfile
-    ps1 = os.path.join(os.path.dirname(__file__), "tools", "compare_and_comment.ps1")
-    if not os.path.exists(ps1):
-        raise RuntimeError("tools/compare_and_comment.ps1 introuvable")
-
-    ps1 = os.path.normpath(os.path.abspath(ps1))
-    original_docx = os.path.normpath(os.path.abspath(original_docx))
-    revised_docx = os.path.normpath(os.path.abspath(revised_docx))
-    comments_csv = os.path.normpath(os.path.abspath(comments_csv))
-    output_docx = os.path.normpath(os.path.abspath(output_docx))
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".log") as tmp:
-        log_file = tmp.name
-
-    try:
-        cmd = (
-            f"$ErrorActionPreference='Stop'; "
-            f"try {{ & '{ps1}' -OriginalDocx '{original_docx}' -RevisedDocx '{revised_docx}' -CommentsCsv '{comments_csv}' -OutputDocx '{output_docx}' 2>&1 | Tee-Object -FilePath '{log_file}' }} "
-            f"catch {{ $m=($_.Exception|Out-String); if([string]::IsNullOrWhiteSpace($m)){{ $m=($_|Out-String)}}; [Console]::Error.WriteLine($m); exit 1 }}"
-        )
-
-        res = subprocess.run([
-            'powershell.exe','-NoProfile','-ExecutionPolicy','Bypass','-NoLogo','-NonInteractive','-Command', cmd
-        ], capture_output=True, text=True, encoding='utf-8', errors='replace')
-
-        if res.returncode != 0:
-            detail = ''
-            for enc in ('utf-8','utf-16','cp1252'):
-                try:
-                    with open(log_file, 'r', encoding=enc, errors='replace') as f:
-                        t = (f.read() or '').strip()
-                    if t:
-                        detail = t
-                        break
-                except Exception:
-                    continue
-            if not detail:
-                detail = (res.stderr or res.stdout or '').strip() or 'Erreur PowerShell inconnue.'
-            raise RuntimeError(detail)
-    finally:
-        try:
-            if os.path.exists(log_file):
-                os.unlink(log_file)
-        except Exception:
-            pass
-
 # ---------------------- Fenêtre de sélection ----------------------
 
 class SectionsDialog(tk.Toplevel):
@@ -529,7 +477,7 @@ class App(tk.Tk):
             out_docx_path = os.path.join(self.output_dir, out_name)
             
             # Étape finale : utiliser l'outil Python pour ajouter les commentaires
-            run_compare_and_comment_ps(cut_docx_path, revised_docx_path, csv_path, out_docx_path)
+            add_comments_to_docx(revised_docx_path, csv_path, out_docx_path)
 
             self.log("Livrable prêt !")
             self.log(f"Fichier final: {out_docx_path}")
@@ -542,3 +490,4 @@ class App(tk.Tk):
 
 if __name__ == "__main__":
     App().mainloop()
+
