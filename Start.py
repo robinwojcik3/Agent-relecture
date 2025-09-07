@@ -99,7 +99,7 @@ def analyze_sections(docx_path: str):
         s.number = ".".join(parts)
     return secs
 
-def filter_paragraphs_by_sections(docx_path: str, chosen: list, sections: list) -> str:
+def filter_paragraphs_by_sections(docx_path: str, chosen: list, sections: list, out_path: str = None) -> str:
     doc = Document(docx_path)
     new_doc = Document()
     # Transférer les styles pour conserver la mise en forme
@@ -136,7 +136,8 @@ def filter_paragraphs_by_sections(docx_path: str, chosen: list, sections: list) 
                     pass
 
     base = os.path.splitext(os.path.basename(docx_path))[0]
-    out_path = os.path.join(WORK_DIR, f"{base}_SECTIONS_{ts_now()}.docx")
+    if not out_path:
+        out_path = os.path.join(WORK_DIR, f"{base}_SECTIONS_{ts_now()}.docx")
     new_doc.save(out_path)
     return out_path
 
@@ -604,6 +605,78 @@ def _launch_prep_only(self):
 # Rediriger le bouton vers le nouveau flux (préparation uniquement)
 App.launch_prep_only = _launch_prep_only
 App.launch_analysis = _launch_prep_only
+
+# Implémentation v2: stricte sauvegarde de la copie découpée dans input/
+def _launch_prep_only_v2(self):
+    if not self.copy_relpath or not self.mode:
+        messagebox.showwarning("Info", "Sélectionnez un fichier ET un mode.")
+        return
+    selected_idx = [i for i, v in enumerate(self.section_vars) if v.get()]
+    if not selected_idx and not messagebox.askyesno("Document entier", "Traiter le document entier ?"):
+        return
+
+    try:
+        self.log("A) Préparation…")
+        abs_copy = os.path.join(ROOT, self.copy_relpath)
+        base_name = os.path.splitext(os.path.basename(abs_copy))[0]
+
+        selected_labels = [self.sections[i].label() for i in selected_idx]
+        session = {
+            "timestamp": datetime.now().isoformat(),
+            "source": self.copy_relpath,
+            "mode": self.mode,
+            "sections": selected_labels,
+            "output_dir": self.output_dir,
+        }
+        with open(os.path.join(WORK_DIR, "session.json"), "w", encoding="utf-8") as f:
+            json.dump(session, f, ensure_ascii=False, indent=2)
+
+        self.log("B) Découpage par sections…")
+        in_name = os.path.basename(abs_copy)
+        name_no_ext, ext = os.path.splitext(in_name)
+        if "_copie" in name_no_ext:
+            dec_name_no_ext = name_no_ext.split("_copie")[0] + "_copie_DECOUPE"
+        else:
+            dec_name_no_ext = name_no_ext + "_DECOUPE"
+        dec_filename = dec_name_no_ext + ext
+        dec_path_abs = os.path.join(INPUT_DIR, dec_filename)
+        if os.path.exists(dec_path_abs):
+            i = 2
+            while True:
+                candidate = os.path.join(INPUT_DIR, f"{dec_name_no_ext}_{i}{ext}")
+                if not os.path.exists(candidate):
+                    dec_path_abs = candidate
+                    break
+                i += 1
+
+        cut_docx_path = filter_paragraphs_by_sections(abs_copy, selected_idx, self.sections, out_path=dec_path_abs)
+
+        # Générer et enregistrer le prompt opérationnel pour l'agent IA
+        rel_decoupee = os.path.relpath(cut_docx_path, ROOT).replace("\\", "/")
+        prompt_text = self.build_prompt_preview(rel_decoupee, selected_labels, self.mode)
+        self.prompt_txt.config(state="normal")
+        self.prompt_txt.delete("1.0", tk.END)
+        self.prompt_txt.insert(tk.END, prompt_text)
+        self.prompt_txt.config(state="disabled")
+
+        prompt_name = f"agent_prompt_{self.mode}_{ts_now()}.txt"
+        prompt_path = os.path.join(self.output_dir, prompt_name)
+        with open(prompt_path, "w", encoding="utf-8") as f:
+            f.write(prompt_text)
+
+        self.log("Fichiers générés.")
+        self.log(f"DOCX découpé (base de travail): {cut_docx_path}")
+        self.log(f"Prompt: {prompt_path}")
+        messagebox.showinfo("Terminé", f"Génération effectuée:\n- DOCX: {cut_docx_path}\n- Prompt: {prompt_path}")
+
+    except Exception as e:
+        self.log(f"ERREUR: {e}")
+        import traceback; traceback.print_exc()
+        messagebox.showerror("Erreur Critique", f"Le processus a échoué:\n{e}")
+
+# Rediriger vers la v2
+App.launch_prep_only = _launch_prep_only_v2
+App.launch_analysis = _launch_prep_only_v2
 
 # Nouveau gabarit de prompt conforme à la directive
 def _build_prompt_preview(self, rel_docx: str, selected_labels: list, mode: str) -> str:
