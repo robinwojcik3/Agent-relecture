@@ -163,7 +163,7 @@ def sanitize_text(s: str) -> str:
     s = re.sub(r"\s+", " ", s)
     s = re.sub(r"\s+([,;:!?])", r"\1", s)
     s = re.sub(r"\(\s+", "(", s)
-    s = re.sub(r"\s+\")", ")", s)
+    s = re.sub(r"\s+\)", ")", s)
     return s.strip()
 
 ALLOWED_CATEGORIES = ["coherence", "methodologie", "reglementaire", "carto", "redaction"]
