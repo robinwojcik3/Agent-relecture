@@ -695,10 +695,8 @@ def _build_prompt_preview(self, rel_docx: str, selected_labels: list, mode: str)
         # En cas de souci de contexte, fournir un prompt minimal viable
         return f"Document découpé: {rel_docx}\nMode: {mode}"
 
-    return (f"Contexte. Tu dois réaliser une relecture experte du document de travail indiqué ci-dessous. "
-            f"Le fichier original ne doit jamais être ouvert ni modifié. Toute l’analyse doit strictement porter "
-            f"sur la copie dédiée préparée pour toi.\n\n"
-
+    return (f"Contexte. Tu dois réaliser une relecture experte du document suivant : {chemin_decoupee}. "
+            f"Rôle et Contexte : Vous êtes un(e) Chef de Projet Senior / Expert(e) Écologue chevronné(e) au sein d'un bureau d'études environnementales. Votre expertise couvre la rédaction, la coordination, et surtout la validation critique d'études d'impact (EIE)"
             f"Document à analyser. Le document de travail est la COPIE DÉCOUPÉE suivante : {chemin_decoupee}. "
             f"Ce chemin doit être utilisé tel quel. Vérifie dès le début que tu lis bien ce fichier et aucun autre. "
             f"Toute référence au fichier original {chemin_original} est proscrite pour la relecture. "
