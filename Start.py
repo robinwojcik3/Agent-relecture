@@ -724,5 +724,117 @@ def _build_prompt_preview(self, rel_docx: str, selected_labels: list, mode: str)
 # Remplace la méthode de génération de prompt par le nouveau gabarit
 App.build_prompt_preview = _build_prompt_preview
 
+# Surcharges pour respecter le nouveau flux sans copies intermédiaires
+def _choose_source_new(self):
+    path = filedialog.askopenfilename(filetypes=[("Documents Word", "*.docx")])
+    if not path:
+        return
+    # Ne créer aucune copie ici : on ne fait qu'enregistrer le chemin source
+    self.source_path = os.path.abspath(path)
+    self.copy_relpath = None
+    self.src_var.set(self.source_path)
+    # Réinitialiser la sélection de sections
+    self.sections, self.section_vars = [], []
+    for w in list(self.sections_frame.children.values()):
+        w.destroy()
+    self.sections_count_var.set("0 section sǸlectionnǸe")
+    self.log("Fichier source sǸlectionnǸ. Aucune copie crǸǸe.")
+
+def _show_sections_new(self):
+    # Analyse directe du fichier original (lecture seule)
+    if not self.source_path:
+        messagebox.showwarning("Info", "SǸlectionnez un fichier.")
+        return
+    try:
+        self.sections = analyze_sections(self.source_path)
+        pre = [i for i, v in enumerate(self.section_vars) if v.get()] if self.section_vars else []
+        dlg = SectionsDialog(self, self.sections, pre)
+        self.wait_window(dlg)
+        if dlg.result is not None:
+            self.section_vars = [tk.BooleanVar(value=(i in set(dlg.result))) for i in range(len(self.sections))]
+            for w in list(self.sections_frame.children.values()):
+                w.destroy()
+            summary = [self.sections[i].label() for i in sorted(dlg.result)][:6]
+            if summary:
+                for lab in summary:
+                    tk.Label(self.sections_frame, text=f"• {lab}", anchor="w").pack(anchor="w")
+                if len(dlg.result) > 6:
+                    tk.Label(self.sections_frame, text="…", anchor="w").pack(anchor="w")
+            else:
+                tk.Label(self.sections_frame, text="(document entier)", anchor="w").pack(anchor="w")
+        self.update_sections_count()
+    except Exception as e:
+        messagebox.showerror("Erreur", f"Analyse des sections impossible:\n{e}")
+
+def _launch_prep_only_v3(self):
+    # L'unique opération de fichier dans input a lieu ici : création de la copie découpée
+    if not self.source_path or not self.mode:
+        messagebox.showwarning("Info", "SǸlectionnez un fichier ET un mode.")
+        return
+    selected_idx = [i for i, v in enumerate(self.section_vars) if v.get()]
+    if not selected_idx and not messagebox.askyesno("Document entier", "Traiter le document entier ?"):
+        return
+
+    try:
+        self.log("A) Préparation…")
+        abs_src = self.source_path
+        base_name = os.path.basename(abs_src)
+        name_no_ext, ext = os.path.splitext(base_name)
+
+        selected_labels = [self.sections[i].label() for i in selected_idx]
+        session = {
+            "timestamp": datetime.now().isoformat(),
+            "source": os.path.relpath(abs_src, ROOT).replace("\\", "/"),
+            "mode": self.mode,
+            "sections": selected_labels,
+            "output_dir": self.output_dir,
+        }
+        with open(os.path.join(WORK_DIR, "session.json"), "w", encoding="utf-8") as f:
+            json.dump(session, f, ensure_ascii=False, indent=2)
+
+        self.log("B) Découpage par sections…")
+        # Nom déterministe et explicite : <nom_original>_DECOUPE.ext
+        dec_filename = f"{name_no_ext}_DECOUPE{ext}"
+        dec_path_abs = os.path.join(INPUT_DIR, dec_filename)
+        try:
+            if os.path.exists(dec_path_abs):
+                os.remove(dec_path_abs)  # remplacer l'ancienne copie liée à cette session
+        except Exception:
+            pass
+
+        cut_docx_path = filter_paragraphs_by_sections(abs_src, selected_idx, self.sections, out_path=dec_path_abs)
+
+        # Générer et afficher le prompt strictement référencé à la copie découpée
+        rel_decoupee = os.path.relpath(cut_docx_path, ROOT).replace("\\", "/")
+        prompt_text = self.build_prompt_preview(rel_decoupee, selected_labels, self.mode)
+        self.prompt_txt.config(state="normal")
+        self.prompt_txt.delete("1.0", tk.END)
+        self.prompt_txt.insert(tk.END, prompt_text)
+        self.prompt_txt.config(state="disabled")
+
+        # Enregistrer le prompt pour archivage dans le dossier de sortie
+        prompt_name = f"agent_prompt_{self.mode}_{ts_now()}.txt"
+        os.makedirs(self.output_dir, exist_ok=True)
+        prompt_path = os.path.join(self.output_dir, prompt_name)
+        with open(prompt_path, "w", encoding="utf-8") as f:
+            f.write(prompt_text)
+
+        # Affichage des informations clés à l'écran
+        self.log("Fichiers générés.")
+        self.log(f"DOCX découpé (base de travail): {cut_docx_path}")
+        self.log(f"Prompt: {prompt_path}")
+        messagebox.showinfo("Terminé", f"Création effectuée:\n- DOCX (copie découpée): {cut_docx_path}\n- Prompt: {prompt_path}")
+
+    except Exception as e:
+        self.log(f"ERREUR: {e}")
+        import traceback; traceback.print_exc()
+        messagebox.showerror("Erreur Critique", f"Le processus a échoué:\n{e}")
+
+# Appliquer les surcharges
+App.choose_source = _choose_source_new
+App.show_sections = _show_sections_new
+App.launch_prep_only = _launch_prep_only_v3
+App.launch_analysis = _launch_prep_only_v3
+
 if __name__ == "__main__":
     App().mainloop()
