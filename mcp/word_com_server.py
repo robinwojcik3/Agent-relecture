@@ -171,64 +171,172 @@ class WordSession:
 
 
 session = WordSession()
-server = Server("word-com")
+# Expose tools under the 'word' namespace
+server = Server("word")
+
+
+# ========== New normalized API tools ==========
+@server.tool()
+def open_document(path: str) -> str:
+    """Open a COPY of the given .docx into work/ and edit that copy only."""
+    # Create working copy in work/ and open it, never the original
+    from pathlib import Path
+    import shutil
+    with session._lock:
+        session._ensure_app()
+        if session.doc is not None:
+            session.doc.Close(SaveChanges=False)
+            session.doc = None
+        src = os.path.abspath(path)
+        root = Path(__file__).resolve().parents[1]
+        work_dir = root / "work"
+        work_dir.mkdir(exist_ok=True)
+        base = Path(src).name
+        dst = work_dir / (Path(base).stem + "_MCP_WORK.docx")
+        shutil.copy2(src, dst)
+        session.original_path = src
+        session.doc = session.app.Documents.Open(str(dst))
+        return str(dst)
 
 
 @server.tool()
-def open(path: str) -> str:
-    """Open a .docx file for editing (copy decoupee)."""
-    return session.tool_open(path)
-
-
-@server.tool()
-def set_track_changes(on: bool = True) -> bool:
+def enable_tracking(on: bool = True) -> bool:
     """Enable/disable track changes on the active document."""
-    return session.tool_set_track(on)
+    with session._lock:
+        if session.doc is None:
+            raise RuntimeError("No document open")
+        session.doc.TrackRevisions = bool(on)
+        return bool(on)
 
 
 @server.tool()
-def insert_comment(anchor: Dict[str, Any], text: str) -> int:
-    """Insert a Word comment at the given anchor."""
-    return session.tool_insert_comment(anchor, text)
+def add_comment(range: Dict[str, Any], text: str, author: Optional[str] = None) -> Dict[str, Any]:
+    """Add a comment at a {start,end} range or first {find:"pattern"}."""
+    with session._lock:
+        if session.doc is None:
+            raise RuntimeError("No document open")
+        rng = session.doc.Content
+        # Determine target range
+        if isinstance(range, dict):
+            if 'start' in range and 'end' in range:
+                s, e = int(range['start']), int(range['end'])
+                rng = session.doc.Range(Start=s, End=e)
+            elif 'find' in range:
+                text_find = str(range['find'] or '')
+                f = rng.Find
+                f.Text = text_find
+                f.MatchCase = False
+                f.MatchWholeWord = False
+                if not f.Execute():
+                    raise RuntimeError("Pattern not found for add_comment")
+        # Temporarily set author if provided
+        prev_name = None
+        prev_init = None
+        if author:
+            prev_name = session.app.UserName
+            prev_init = getattr(session.app, 'UserInitials', None)
+            session.app.UserName = author
+            try:
+                initials = ''.join([w[0] for w in author.split() if w])[:3].upper()
+                if prev_init is not None:
+                    session.app.UserInitials = initials
+            except Exception:
+                pass
+        try:
+            c = session.doc.Comments.Add(rng, text)
+            return {"index": int(c.Index), "start": int(rng.Start), "end": int(rng.End)}
+        finally:
+            if author:
+                try:
+                    session.app.UserName = prev_name
+                    if prev_init is not None:
+                        session.app.UserInitials = prev_init
+                except Exception:
+                    pass
 
 
 @server.tool()
-def write_revision(anchor: Dict[str, Any], new_text: str) -> Dict[str, Any]:
-    """Write revised text at the given anchor (tracked)."""
-    return session.tool_write_revision(anchor, new_text)
+def replace_text_tracked(old_text: str, new_text: str, match_case: bool = False, whole_word: bool = False) -> int:
+    """Replace all occurrences with tracked changes; returns count."""
+    with session._lock:
+        if session.doc is None:
+            raise RuntimeError("No document open")
+        count = 0
+        content_end = session.doc.Content.End
+        start = 0
+        while True:
+            rng = session.doc.Range(Start=start, End=content_end)
+            f = rng.Find
+            f.Text = old_text
+            f.MatchCase = bool(match_case)
+            f.MatchWholeWord = bool(whole_word)
+            f.Wrap = 0  # wdFindStop
+            if not f.Execute():
+                break
+            # Replace by setting Range.Text (tracked when TrackRevisions=True)
+            rng.Text = new_text
+            count += 1
+            # Move start after the replaced range
+            start = int(rng.End)
+            content_end = session.doc.Content.End
+        return count
 
 
 @server.tool()
-def accept_revision(index: int) -> bool:
-    """Accept revision by 1-based index in the Revisions collection."""
-    return session.tool_accept_revision(index)
+def insert_text_tracked(position: int, text: str) -> Dict[str, int]:
+    """Insert text at 1-based character position; returns inserted range."""
+    with session._lock:
+        if session.doc is None:
+            raise RuntimeError("No document open")
+        pos = max(0, int(position))
+        rng = session.doc.Range(Start=pos, End=pos)
+        rng.Text = text
+        return {"start": int(rng.Start), "end": int(rng.End)}
 
 
 @server.tool()
-def reject_revision(index: int) -> bool:
-    """Reject revision by 1-based index in the Revisions collection."""
-    return session.tool_reject_revision(index)
+def save_document() -> str:
+    """Save the current working document (never the original)."""
+    with session._lock:
+        if session.doc is None:
+            raise RuntimeError("No document open")
+        current = os.path.abspath(session.doc.FullName)
+        if session.original_path and os.path.abspath(current) == os.path.abspath(session.original_path):
+            raise RuntimeError("Refusing to save to the original document")
+        session.doc.Save()
+        return current
 
 
-@server.tool()
-def goto(target: Any) -> Dict[str, int]:
-    """Go to a section (int), a bookmark (str), or text (str)."""
-    return session.tool_goto(target)
-
-
+# ========== Keep existing finalization tools ==========
 @server.tool()
 def save_as(path: str) -> str:
-    """Save the active document to the given path."""
-    return session.tool_save_as(path)
+    """Save the active document to the given path; must not overwrite original."""
+    with session._lock:
+        if session.doc is None:
+            raise RuntimeError("No document open")
+        dest = os.path.abspath(path)
+        if session.original_path and os.path.abspath(dest) == os.path.abspath(session.original_path):
+            raise RuntimeError("Refusing to overwrite original document")
+        # Ensure output directory exists
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        session.doc.SaveAs2(dest)
+        return dest
 
 
 @server.tool()
-def close(save: bool = False) -> bool:
-    """Close the active document and quit Word."""
-    return session.tool_close(save)
+def close(discard: bool = False) -> bool:
+    """Close the active document and quit Word. discard=True will not save pending changes."""
+    with session._lock:
+        if session.doc is not None:
+            session.doc.Close(SaveChanges=not bool(discard))
+            session.doc = None
+        if session.app is not None:
+            session.app.Quit()
+            session.app = None
+        pythoncom.CoUninitialize()
+        return True
 
 
 if __name__ == "__main__":
     # Run the MCP server over stdio
     server.run()
-

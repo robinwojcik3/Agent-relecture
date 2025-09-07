@@ -877,3 +877,40 @@ App.launch_analysis = _launch_prep_only_v3
 
 if __name__ == "__main__":
     App().mainloop()
+
+# --- MCP prompt v2 (normalized tool names) ---
+def _build_prompt_preview_mcp2(self, rel_docx: str, selected_labels: list, mode: str) -> str:
+    try:
+        abs_decoupee = os.path.normpath(os.path.join(ROOT, rel_docx))
+        abs_original = os.path.normpath(self.source_path) if getattr(self, 'source_path', None) else "(non disponible)"
+        chemin_checklist = os.path.normpath(os.path.join(ROOT, "modes", mode, "instructions", "checklist.md"))
+        chemin_refs = os.path.normpath(os.path.join(ROOT, "modes", mode, "refs"))
+        base_src = os.path.splitext(os.path.basename(abs_original if abs_original != "(non disponible)" else abs_decoupee))[0]
+        final_name = f"{base_src}_AI_suivi+commentaires.docx"
+        abs_out = os.path.normpath(os.path.join(OUTPUT_DIR, final_name))
+    except Exception:
+        return f"Document découpé: {rel_docx}\nMode: {mode}"
+
+    return (
+        "Contexte. Tu dois réaliser une relecture experte sur un document Word avec insertion de commentaires et activation du suivi des modifications. "
+        "Toutes les opérations d’édition doivent être effectuées via le serveur MCP « word » pour garantir une compatibilité native avec Word.\n\n"
+        f"Document à traiter. Le seul fichier de travail est la copie découpée suivante : {abs_decoupee}. Utilise strictement ce chemin. "
+        f"N’accède jamais au fichier original {abs_original}. Toute l’analyse et toutes les écritures se font dans {abs_decoupee}.\n\n"
+        f"Cadre de relecture. Le module à appliquer est : {mode} (offre, diagnostic, impacts, mesures). "
+        f"Appuie-toi sur la checklist : {chemin_checklist}. Références associées : {chemin_refs}. "
+        "Conduis une relecture séquentielle et exhaustive selon la checklist. Pour chaque anomalie, ajoute un commentaire clair et propose une correction en suivi de modifications.\n\n"
+        f"Procédure obligatoire via MCP. Ouvre le document avec word.open_document(\"{abs_decoupee}\"). "
+        "Active le suivi des révisions avec word.enable_tracking(on=True). Parcours le texte par sections pertinentes. "
+        "Pour les corrections, utilise word.replace_text_tracked(old_text, new_text, …) et word.insert_text_tracked(position, text). Pour chaque observation, ajoute un commentaire avec word.add_comment({find: …} ou {start,end}, text, author?). "
+        f"Enregistre l’avancement avec word.save_document(). À la fin, sauvegarde le livrable final en output sous : {abs_out} via word.save_as(\"{abs_out}\"), puis word.close(discard=False).\n\n"
+        f"Résultat attendu. Un unique fichier Word final contenant l’ensemble des révisions (track changes) et tous les commentaires, enregistré exactement à : {abs_out}. "
+        "Confirme en sortie le chemin sauvegardé, le nombre de commentaires ajoutés et le nombre de révisions écrites.\n\n"
+        f"Contraintes et sécurité. Ne modifie jamais le fichier original. N’écris pas dans d’autres copies que {abs_decoupee} et le livrable final. "
+        "Si le serveur MCP « word » est indisponible ou si une opération échoue, arrête-toi et signale précisément l’étape bloquante.\n\n"
+        "Critères d’acceptation. Le prompt généré par l’application contient ce bloc MCP. À l’exécution, le LLM utilise exclusivement les outils MCP « word » pour ouvrir, commenter, réviser, sauvegarder. "
+        "Le livrable final est présent en output, avec suivi des modifications actif et commentaires correctement ancrés.\n\n"
+        "Mise en évidence des modifications. Lorsque tu écris des corrections, veille à ce que les insertions soient bien visibles (track changes activé). Les commentaires doivent commencer par 'Proposition de reformulation:' lorsqu’ils suggèrent un nouveau libellé."
+    )
+
+# Use v2 generator by default (overrides previous binding)
+App.build_prompt_preview = _build_prompt_preview_mcp2

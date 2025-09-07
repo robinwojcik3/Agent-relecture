@@ -4,20 +4,28 @@ Word COM MCP Server
 This folder contains a Model Context Protocol (MCP) server that exposes native Microsoft Word COM automation on Windows.
 
 Tools (namespace: `word`)
-- `word.open(path)`: Open a .docx file (copy découpée) for editing.
-- `word.set_track_changes(on=True)`: Enable/disable tracked changes.
-- `word.insert_comment(anchor, text)`: Insert a Word comment at the given anchor.
-- `word.write_revision(anchor, new_text)`: Replace/insert text at anchor (tracked).
-- `word.accept_revision(index)`: Accept a revision by 1-based index.
-- `word.reject_revision(index)`: Reject a revision by 1-based index.
-- `word.goto(target)`: Go to a section (int), bookmark (str), or text (str).
-- `word.save_as(path)`: Save the active document to path (must not overwrite original).
-- `word.close(save=False)`: Close the document and quit Word.
+- `word.open_document(path)`: Open a COPY of the given `.docx` into `work/` and edit that copy (never the original).
+- `word.enable_tracking(on=True)`: Enable/disable tracked changes on the active document.
+- `word.add_comment(range, text, author?)`: Add a comment on `{start,end}` or first `{find:"pattern"}`; optional `author`.
+- `word.replace_text_tracked(old_text, new_text, match_case=False, whole_word=False)`: Replace all occurrences with tracked changes; returns count.
+- `word.insert_text_tracked(position, text)`: Insert text at 1-based character position with tracked changes; returns inserted range.
+- `word.save_document()`: Save the working copy (refuses saving to the original path).
+- `word.save_as(path)`: Save the active document to `output/…` (must not overwrite original).
+- `word.close(discard=False)`: Close the document and quit Word.
 
 Anchors
 - `{ "find": "text" }` → first match in document
-- `{ "bookmark": "Name" }` → existing bookmark
 - `{ "range": [start, end] }` → Word character offsets (1-based)
+
+Mapping (needs → implementation)
+- Open découpe safely → `open_document()` (copies to `work/`, opens copy)
+- Enable track changes → `enable_tracking()`
+- Add Word comments → `add_comment()`
+- Write tracked replacements → `replace_text_tracked()`
+- Insert tracked text → `insert_text_tracked()`
+- Save working doc → `save_document()`
+- Save final deliverable → `save_as()` (use `output/…`)
+- Close Word session → `close(discard)`
 
 Install
 - `pip install -r requirements.txt`
@@ -46,6 +54,5 @@ Cursor / Windsurf (similar)
 
 Notes
 - Single session: the server serializes access and allows only one active Word instance.
-- Safety: the server refuses `save_as` to the same path that was opened.
-- Always work on the découpage copy provided by the app; do not open the original in write mode.
-
+- Safety: refuses any write to the original (`save_document`/`save_as`).
+- Results always directed to `work/` (working copy) and `output/` (final deliverable).
