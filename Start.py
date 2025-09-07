@@ -632,13 +632,6 @@ def _build_prompt_preview(self, rel_docx: str, selected_labels: list, mode: str)
             f"L’analyse doit couvrir l’intégralité du contenu de cette copie découpée, qui ne contient que les sections "
             f"sélectionnées par l’utilisateur.\n\n"
 
-            f"Choix de modalité. Deux modalités existent. La modalité par défaut et recommandée consiste à travailler sur "
-            f"la COPIE DÉCOUPÉE {chemin_decoupee} et à relire l’intégralité de cette copie. C’est cette modalité que tu dois "
-            f"appliquer ici. À titre exceptionnel seulement, si aucune découpe n’a été effectuée, la relecture se ferait alors sur "
-            f"une COPIE NON DÉCOUPÉE {chemin_non_decoupee} avec une restriction explicite aux sections suivantes : {sections_str}. "
-            f"Ce n’est pas le cas présent : tu dois ignorer le fichier original et toute autre copie, et te concentrer exclusivement sur "
-            f"{chemin_decoupee}.\n\n"
-
             f"Périmètre méthodologique. Le module de relecture à appliquer est : {mode_nom} (offre, diagnostic, impacts, ou mesures). "
             f"Tu t’appuies sur la checklist correspondante située ici : {chemin_checklist}. Lorsque pertinent, tu peux consulter les documents "
             f"de référence du mode dans : {chemin_refs}. Tu justifies chaque remarque par des éléments du texte, et tu maintiens une cohérence stricte "
