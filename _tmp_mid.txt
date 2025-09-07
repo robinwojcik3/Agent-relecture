@@ -1,0 +1,150 @@
+        if style.type: 
+            try: doc.styles.add_style(style.name, style.type)
+            except: pass
+
+    for raw in md_text.splitlines():
+        if not raw.strip():
+            doc.add_paragraph("")
+            continue
+        if raw.startswith("#"):
+            level = len(raw) - len(raw.lstrip("#"))
+            p = doc.add_paragraph(raw[level:].strip())
+            try: p.style = f"Heading {min(level,6)}"
+            except: pass
+        else:
+            doc.add_paragraph(raw)
+    doc.save(out_path)
+
+def write_comments_csv(rows, path: str):
+    fieldnames = ["ancre_textuelle", "commentaire", "gravite", "categorie"]
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        for r in rows:
+            if r.get("ancre_textuelle"):
+                w.writerow({k: str(r.get(k, "")) for k in fieldnames})
+
+def run_compare_and_comment_ps(original_docx: str, revised_docx: str, comments_csv: str, output_docx: str):
+    """Exécute tools/compare_and_comment.ps1 pour comparer et insérer des commentaires.
+
+    Utilise Word via COM (PowerShell) car python-docx ne gère pas l'ajout de
+    commentaires. Capture un journal pour afficher un message d'erreur utile.
+    """
+    import subprocess, tempfile
+    ps1 = os.path.join(os.path.dirname(__file__), "tools", "compare_and_comment.ps1")
+    if not os.path.exists(ps1):
+        raise RuntimeError("tools/compare_and_comment.ps1 introuvable")
+
+    ps1 = os.path.normpath(os.path.abspath(ps1))
+    original_docx = os.path.normpath(os.path.abspath(original_docx))
+    revised_docx = os.path.normpath(os.path.abspath(revised_docx))
+    comments_csv = os.path.normpath(os.path.abspath(comments_csv))
+    output_docx = os.path.normpath(os.path.abspath(output_docx))
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".log") as tmp:
+        log_file = tmp.name
+
+    try:
+        # Note: PowerShell parameter names are case-insensitive, but we match the script's declaration for clarity.
+        cmd = (
+            f"$ErrorActionPreference='Stop'; "
+            f"try {{ & '{ps1}' -original_docx '{original_docx}' -revised_docx '{revised_docx}' -comments_csv '{comments_csv}' -output_docx '{output_docx}' 2>&1 | Tee-Object -FilePath '{log_file}' }} "
+            f"catch {{ $m=($_.Exception|Out-String); if([string]::IsNullOrWhiteSpace($m)){{ $m=($_|Out-String)}}; [Console]::Error.WriteLine($m); exit 1 }}"
+        )
+
+        res = subprocess.run([
+            'powershell.exe','-NoProfile','-ExecutionPolicy','Bypass','-NoLogo','-NonInteractive','-Command', cmd
+        ], capture_output=True, text=True, encoding='utf-8', errors='replace')
+
+        if res.returncode != 0:
+            detail = ''
+            for enc in ('utf-8','utf-16','cp1252'):
+                try:
+                    with open(log_file, 'r', encoding=enc, errors='replace') as f:
+                        t = (f.read() or '').strip()
+                    if t:
+                        detail = t
+                        break
+                except Exception:
+                    continue
+            if not detail:
+                detail = (res.stderr or res.stdout or '').strip() or 'Erreur PowerShell inconnue.'
+            raise RuntimeError(detail)
+    finally:
+        try:
+            if os.path.exists(log_file):
+                os.unlink(log_file)
+        except Exception:
+            pass
+
+# ---------------------- Fenêtre de sélection ----------------------
+
+class SectionsDialog(tk.Toplevel):
+    def __init__(self, master, sections, preselected_idx=None):
+        super().__init__(master)
+        self.title("Sélection des sections")
+        self.geometry("560x420")
+        self.sections, self.result = sections, None
+        frm = tk.Frame(self); frm.pack(fill="both", expand=True, padx=10, pady=10)
+        self.lb = tk.Listbox(frm, selectmode=tk.EXTENDED, activestyle="none")
+        sb = ttk.Scrollbar(frm, orient="vertical", command=self.lb.yview)
+        self.lb.config(yscrollcommand=sb.set); self.lb.pack(side="left", fill="both", expand=True); sb.pack(side="right", fill="y")
+        for i, s in enumerate(sections):
+            self.lb.insert(tk.END, f"{ '    ' * max(0, s.level - 1)}{s.label()}")
+            if i in (preselected_idx or []): self.lb.selection_set(i)
+        self.lb.bind("<ButtonRelease-1>", self.on_click_block)
+        btns = tk.Frame(self); btns.pack(fill="x", padx=10, pady=(0, 10))
+        tk.Button(btns, text="Tout cocher", command=self.sel_all).pack(side="left")
+        tk.Button(btns, text="Tout décocher", command=self.sel_none).pack(side="left", padx=6)
+        tk.Button(btns, text="Valider", command=self.on_ok).pack(side="right")
+        tk.Button(btns, text="Annuler", command=self.on_cancel).pack(side="right", padx=6)
+        self.bind("<Return>", lambda e: self.on_ok()); self.bind("<Escape>", lambda e: self.on_cancel())
+        self.transient(master); self.grab_set(); self.lb.focus_set()
+
+    def sel_all(self): self.lb.select_set(0, tk.END)
+    def sel_none(self): self.lb.select_clear(0, tk.END)
+    def on_ok(self): self.result = list(self.lb.curselection()); self.destroy()
+    def on_cancel(self): self.result = None; self.destroy()
+    def on_click_block(self, event):
+        if (event.state & 0x0001) or (event.state & 0x0004): return
+        idx = self.lb.nearest(event.y)
+        if idx < 0: return
+        end = idx + 1
+        while end < len(self.sections) and self.sections[end].level > self.sections[idx].level: end += 1
+        block = range(idx, end)
+        if all(i in set(self.lb.curselection()) for i in block): [self.lb.selection_clear(i) for i in block]
+        else: self.lb.select_clear(0, tk.END); [self.lb.selection_set(i) for i in block]
+
+# ------------------------- GUI -------------------------
+
+class App(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Relecture IA — Assistant graphique")
+        self.geometry("1000x760")
+        self.source_path, self.copy_relpath, self.mode = None, None, None
+        self.output_dir = OUTPUT_DIR
+        self.sections, self.section_vars = [], []
+        self._build_ui()
+
+    def log(self, msg: str):
+        self.log_txt.config(state="normal")
+        self.log_txt.insert(tk.END, f"{datetime.now().strftime('%H:%M:%S')} — {msg}\n")
+        self.log_txt.see(tk.END); self.log_txt.config(state="disabled"); self.update_idletasks()
+
+    def _build_ui(self):
+        pad = {"padx": 10, "pady": 8}
+        panes = tk.PanedWindow(self, orient=tk.HORIZONTAL); panes.pack(fill="both", expand=True)
+        left = tk.Frame(panes); right = tk.Frame(panes)
+        panes.add(left, minsize=520); panes.add(right, minsize=360)
+
+        f1 = tk.LabelFrame(left, text="1) Fichier source"); f1.pack(fill="x", **pad)
+        self.src_var = tk.StringVar(value="Aucun fichier sélectionné")
+        tk.Label(f1, textvariable=self.src_var, anchor="w").pack(fill="x", padx=10, pady=5)
+        b1 = tk.Frame(f1); b1.pack(anchor="w", padx=10, pady=5)
+        tk.Button(b1, text="Sélectionner le fichier Word…", command=self.choose_source).pack(side="left", padx=5)
+        tk.Button(b1, text="Ouvrir le dossier", command=self.open_source_folder).pack(side="left", padx=5)
+        tk.Label(f1, text="Le fichier original ne sera jamais modifié.", fg="#555").pack(anchor="w", padx=10, pady=5)
+
+        f2 = tk.LabelFrame(left, text="2) Sections du document"); f2.pack(fill="x", **pad)
+        b2 = tk.Frame(f2); b2.pack(anchor="w", padx=10, pady=5)

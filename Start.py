@@ -25,8 +25,7 @@ except ImportError:
     )
     sys.exit(1)
 
-# Importer les nouveaux outils Python locaux
-from tools.python_tools import add_comments_to_docx
+# (Plus d'insertion de commentaires/"livrable final" géré ici)
 
 
 MODES = [
@@ -295,9 +294,10 @@ def run_compare_and_comment_ps(original_docx: str, revised_docx: str, comments_c
         log_file = tmp.name
 
     try:
+        # Note: PowerShell parameter names are case-insensitive, but we match the script's declaration for clarity.
         cmd = (
             f"$ErrorActionPreference='Stop'; "
-            f"try {{ & '{ps1}' -OriginalDocx '{original_docx}' -RevisedDocx '{revised_docx}' -CommentsCsv '{comments_csv}' -OutputDocx '{output_docx}' 2>&1 | Tee-Object -FilePath '{log_file}' }} "
+            f"try {{ & '{ps1}' -original_docx '{original_docx}' -revised_docx '{revised_docx}' -comments_csv '{comments_csv}' -output_docx '{output_docx}' 2>&1 | Tee-Object -FilePath '{log_file}' }} "
             f"catch {{ $m=($_.Exception|Out-String); if([string]::IsNullOrWhiteSpace($m)){{ $m=($_|Out-String)}}; [Console]::Error.WriteLine($m); exit 1 }}"
         )
 
@@ -539,6 +539,71 @@ class App(tk.Tk):
             self.log(f"ERREUR: {e}")
             import traceback; traceback.print_exc()
             messagebox.showerror("Erreur Critique", f"Le processus a échoué:\n{e}")
+
+def _launch_prep_only(self):
+    if not self.copy_relpath or not self.mode:
+        messagebox.showwarning("Info", "Sélectionnez un fichier ET un mode.")
+        return
+    selected_idx = [i for i, v in enumerate(self.section_vars) if v.get()]
+    if not selected_idx and not messagebox.askyesno("Document entier", "Traiter le document entier ?"):
+        return
+
+    try:
+        self.log("A) Préparation…")
+        ts = ts_now()
+        abs_copy = os.path.join(ROOT, self.copy_relpath)
+        base_name = os.path.splitext(os.path.basename(abs_copy))[0]
+        work_copy = os.path.join(WORK_DIR, f"{base_name}_copie_{ts}.docx")
+        shutil.copy2(abs_copy, work_copy)
+
+        selected_labels = [self.sections[i].label() for i in selected_idx]
+        session = {
+            "timestamp": datetime.now().isoformat(),
+            "source": self.copy_relpath,
+            "mode": self.mode,
+            "sections": selected_labels,
+            "output_dir": self.output_dir,
+        }
+        with open(os.path.join(WORK_DIR, "session.json"), "w", encoding="utf-8") as f:
+            json.dump(session, f, ensure_ascii=False, indent=2)
+
+        self.log("B) Découpage par sections…")
+        cut_docx_path = filter_paragraphs_by_sections(work_copy, selected_idx, self.sections)
+
+        # Copier la version découpée dans le dossier de sortie
+        base_short = (base_name[:80]).rstrip(" _-.")
+        out_docx_name = f"{base_short}_DECOUPE_{ts_now()}.docx"
+        os.makedirs(self.output_dir, exist_ok=True)
+        cut_docx_out = os.path.join(self.output_dir, out_docx_name)
+        shutil.copy2(cut_docx_path, cut_docx_out)
+
+        # Générer et enregistrer le prompt opérationnel pour l'agent IA
+        rel_out_docx = os.path.relpath(cut_docx_out, ROOT).replace("\\", "/")
+        prompt_text = self.build_prompt_preview(rel_out_docx, selected_labels, self.mode)
+        self.prompt_txt.config(state="normal")
+        self.prompt_txt.delete("1.0", tk.END)
+        self.prompt_txt.insert(tk.END, prompt_text)
+        self.prompt_txt.config(state="disabled")
+
+        prompt_name = f"agent_prompt_{self.mode}_{ts_now()}.txt"
+        prompt_path = os.path.join(self.output_dir, prompt_name)
+        with open(prompt_path, "w", encoding="utf-8") as f:
+            f.write(prompt_text)
+
+        self.log("Fichiers générés.")
+        self.log(f"DOCX découpé: {cut_docx_out}")
+        self.log(f"Prompt: {prompt_path}")
+        messagebox.showinfo("Terminé", f"Génération effectuée:\n- DOCX: {cut_docx_out}\n- Prompt: {prompt_path}")
+
+    except Exception as e:
+        self.log(f"ERREUR: {e}")
+        import traceback; traceback.print_exc()
+        messagebox.showerror("Erreur Critique", f"Le processus a échoué:\n{e}")
+
+
+# Rediriger le bouton vers le nouveau flux (préparation uniquement)
+App.launch_prep_only = _launch_prep_only
+App.launch_analysis = _launch_prep_only
 
 if __name__ == "__main__":
     App().mainloop()
