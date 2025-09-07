@@ -16,3 +16,10 @@ work/*.pdf
 work/refs_txt/
 work/session.json
 
+# Environnement virtuel
+venv/
+.venv/
+
+# Logs
+*.log
+
